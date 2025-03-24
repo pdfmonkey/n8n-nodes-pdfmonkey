@@ -58,6 +58,55 @@ This node has been tested with n8n version 1.0.0 and later.
 
 ## Usage
 
+### Flexible Payload Input
+
+The Generate Document operation supports two methods for providing template data:
+
+1. **JSON Format**:
+   - Enter your entire payload as a JSON object
+   - Ideal for complex data structures or when copying from another source
+   - Example:
+     ```json
+     {
+       "invoiceNumber": "INV-2023-001",
+       "customerName": "Acme Inc.",
+       "items": [
+         {"name": "Widget", "quantity": 5, "price": 10.99},
+         {"name": "Gadget", "quantity": 2, "price": 24.99}
+       ],
+       "total": 104.93
+     }
+     ```
+
+2. **Key-Value Pairs**:
+   - Add fields individually with key-value pairs
+   - More visual and easier to manage for simple templates
+   - Supports complex data structures:
+     - JSON objects/arrays: Values starting with `{` or `[` are automatically parsed as JSON
+     - Arrays from other nodes: The node automatically handles n8n's special array format `[Array: [...]]`
+     - Direct objects: When passing data from other nodes that return objects, they are used directly
+
+### Enhanced Object Handling
+
+The node intelligently processes different value types in key-value pairs:
+
+- **Direct Objects**: Objects passed directly from other nodes are preserved intact
+- **JSON Strings**: Strings that look like JSON (starting with `{` or `[`) are parsed automatically
+- **Special Array Format**: The n8n array format `[Array: [...]]` is detected and parsed
+- **Regular Values**: Simple strings, numbers, and booleans are handled appropriately
+
+This makes it easy to pass complex data from other nodes to PDFMonkey without manual conversion.
+
+#### Example: Processing Arrays from n8n
+
+When you map data from other nodes (like Function or HTTP Request nodes), arrays often come in this special format:
+
+```
+[Array: [{"name":"Mouse","quantity":3,"price":88.92},{"name":"Headphones","quantity":5,"price":14.99},{"name":"Keyboard","quantity":3,"price":48.28}]]
+```
+
+The PDFMonkey node will automatically detect this format, extract the array content, and properly parse it as a JSON array. This is especially useful for templating tables or lists in your PDFs where you need to pass complex structured data.
+
 ### Generate Document with Auto-Polling
 
 The Generate Document operation includes a "Wait For Completion" option that controls whether the node waits for the document to finish generating before continuing the workflow:

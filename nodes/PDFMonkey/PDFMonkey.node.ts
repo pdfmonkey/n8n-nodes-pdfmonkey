@@ -71,6 +71,30 @@ export class PDFMonkey implements INodeType {
 				},
 			},
 			{
+				displayName: 'Payload Input',
+				name: 'payloadInputMethod',
+				type: 'options',
+				options: [
+					{
+						name: 'JSON',
+						value: 'json',
+						description: 'Enter payload as JSON',
+					},
+					{
+						name: 'Key-Value Pairs',
+						value: 'keyValuePairs',
+						description: 'Enter payload as key-value pairs',
+					},
+				],
+				default: 'json',
+				description: 'Method to enter the payload data',
+				displayOptions: {
+					show: {
+						operation: ['generateDocument'],
+					},
+				},
+			},
+			{
 				displayName: 'Payload (JSON)',
 				name: 'payload',
 				type: 'json',
@@ -80,8 +104,48 @@ export class PDFMonkey implements INodeType {
 				displayOptions: {
 					show: {
 						operation: ['generateDocument'],
+						payloadInputMethod: ['json'],
 					},
 				},
+			},
+			{
+				displayName: 'Payload',
+				name: 'payloadKeyValues',
+				placeholder: 'Add Payload Fields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				description: 'The dynamic data for the PDF generation as key-value pairs',
+				displayOptions: {
+					show: {
+						operation: ['generateDocument'],
+						payloadInputMethod: ['keyValuePairs'],
+					},
+				},
+				options: [
+					{
+						name: 'values',
+						displayName: 'Values',
+						values: [
+							{
+								displayName: 'Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								description: 'Field name',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'Field value (supports JSON arrays/objects if starting with [ or {)',
+							},
+						],
+					},
+				],
 			},
 			{
 				displayName: 'Meta (JSON)',
@@ -134,14 +198,79 @@ export class PDFMonkey implements INodeType {
 		if (!credentials || !credentials.apiKey) {
 			throw new NodeOperationError(this.getNode(), 'No API Key provided for PDFMonkey');
 		}
-
+		
+		// Loop through input items
 		for (let i = 0; i < items.length; i++) {
 			try {
 				const operation = this.getNodeParameter('operation', i) as string;
 
 				if (operation === 'generateDocument') {
 					const documentTemplateId = this.getNodeParameter('documentTemplateId', i) as string;
-					const payload = this.getNodeParameter('payload', i) as object;
+					const payloadInputMethod = this.getNodeParameter('payloadInputMethod', i) as string;
+					
+					// Process payload based on input method
+					let finalPayload = {};
+					if (payloadInputMethod === 'json') {
+						// JSON input - use as is
+						finalPayload = this.getNodeParameter('payload', i) as object;
+					} else {
+						// Key-value pairs input - convert to JSON object
+						const keyValuePairs = this.getNodeParameter('payloadKeyValues.values', i, []) as Array<{
+							key: string;
+							value: string;
+						}>;
+						
+						// Convert key-value pairs to a JSON object
+						finalPayload = keyValuePairs.reduce((obj, item) => {
+							// Handle different value types properly
+							if (item.value === null || item.value === undefined) {
+								// Handle null/undefined
+								obj[item.key] = null;
+								return obj;
+							}
+							
+							// If it's already an array or object, use it directly
+							if (typeof item.value === 'object') {
+								obj[item.key] = item.value;
+								return obj;
+							}
+							
+							// Convert to string for further processing if it's not an object
+							const valueAsString = String(item.value);
+							
+							// Special case for [Array: [...]] format
+							if (valueAsString.startsWith('[Array:')) {
+								try {
+									// Extract the array content using string replacement
+									const arrayContent = valueAsString.replace(/^\[Array:\s*/, '').replace(/\]\s*$/, '');
+									// Now parse the extracted array content
+									const parsedValue = JSON.parse(arrayContent) as any;
+									obj[item.key] = parsedValue;
+								} catch (e) {
+									// If parsing fails, use as regular string
+									obj[item.key] = valueAsString;
+								}
+							}
+							// Check if the value is a JSON string (array or object)
+							else if (valueAsString.startsWith('{') || valueAsString.startsWith('[')) {
+								try {
+									// Attempt to parse as JSON
+									const parsedValue = JSON.parse(valueAsString);
+									obj[item.key] = parsedValue;
+								} catch (e) {
+									// If parsing fails, use as regular string
+									obj[item.key] = valueAsString;
+								}
+							} 
+							else {
+								// Regular string value
+								obj[item.key] = valueAsString;
+							}
+
+							return obj;
+						}, {} as Record<string, any>);
+					}
+					
 					const meta = this.getNodeParameter('meta', i) as object;
 					const waitForCompletion = this.getNodeParameter('waitForCompletion', i) as boolean;
 					const status = 'pending';
@@ -156,7 +285,7 @@ export class PDFMonkey implements INodeType {
 						},
 						body: {
 							document_template_id: documentTemplateId,
-							payload,
+							payload: finalPayload,
 							meta,
 							status,
 						},
