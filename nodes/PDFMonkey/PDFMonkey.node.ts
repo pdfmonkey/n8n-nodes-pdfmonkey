@@ -32,26 +32,31 @@ export class PDFMonkey implements INodeType {
 				displayName: 'Actions',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Generate Document',
 						value: 'generateDocument',
 						description: 'Create a new PDF using a template',
+						action: 'Create a new PDF using a template',
 					},
 					{
 						name: 'Get Document',
 						value: 'getDocument',
 						description: 'Get document details and status',
+						action: 'Get document details and status',
 					},
 					{
 						name: 'Download PDF',
 						value: 'downloadPdf',
 						description: 'Download a generated PDF',
+						action: 'Download a generated PDF',
 					},
 					{
 						name: 'Delete Document',
 						value: 'deleteDocument',
 						description: 'Delete a generated PDF document',
+						action: 'Delete a generated PDF document',
 					},
 				],
 				default: 'generateDocument',
@@ -152,7 +157,6 @@ export class PDFMonkey implements INodeType {
 				name: 'meta',
 				type: 'json',
 				default: '{}',
-				required: false,
 				description: 'Additional metadata for the document (e.g., custom filename with "_filename" property)',
 				displayOptions: {
 					show: {
