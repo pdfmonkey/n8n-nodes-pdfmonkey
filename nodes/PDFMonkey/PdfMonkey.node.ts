@@ -54,8 +54,8 @@ export class PDFMonkey implements INodeType {
 					{
 						name: 'Delete Document',
 						value: 'deleteDocument',
-						description: 'Delete a generated PDF document',
-						action: 'Delete a generated PDF document',
+						description: 'Delete an existing PDF document',
+						action: 'Delete an existing PDF document',
 					},
 				],
 				default: 'generateDocument',
@@ -67,7 +67,7 @@ export class PDFMonkey implements INodeType {
 				type: 'string',
 				default: '',
 				required: true,
-				description: 'The ID of the PDFMonkey template to use for generating the PDF',
+				description: 'The ID of the PDFMonkey template to use to generate the PDF',
 				displayOptions: {
 					show: {
 						operation: ['generateDocument'],

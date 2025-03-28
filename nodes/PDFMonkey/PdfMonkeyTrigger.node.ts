@@ -14,7 +14,7 @@ export class PDFMonkeyTrigger implements INodeType {
 		icon: 'file:PDFMonkey.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'Triggers when PDFMonkey sends a webhook and download the PDF if successful',
+		description: 'Triggers when PDFMonkey sends a webhook and downloads the PDF if successful',
 		defaults: {
 			name: 'PDFMonkey Trigger',
 		},
@@ -64,7 +64,7 @@ export class PDFMonkeyTrigger implements INodeType {
 			filename: document.filename,
 		};
 
-		// If document is not successful, just return the status
+		// If document is not successful, just return the response data
 		if (document.status !== 'success') {
 			return {
 				workflowData: [
