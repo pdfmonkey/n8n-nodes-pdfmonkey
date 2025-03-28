@@ -226,7 +226,7 @@ export class PDFMonkey implements INodeType {
 					const payloadInputMethod = this.getNodeParameter('payloadInputMethod', i) as string;
 
 					// Process payload based on input method
-					let finalPayload = {};
+					let finalPayload;
 					if (payloadInputMethod === 'json') {
 						// JSON input - use as is
 						finalPayload = this.getNodeParameter('payload', i) as object;
@@ -343,7 +343,10 @@ export class PDFMonkey implements INodeType {
 						// Wait 2 seconds before next check
 						const waitUntil = Date.now() + 2000;
 						while (Date.now() < waitUntil) {
-							// Empty loop to create delay
+							// Yield to event loop every 200ms to avoid blocking
+							if (Date.now() % 200 < 10) {
+								await new Promise<void>(resolve => resolve());
+							}
 						}
 
 						response = (await this.helpers
