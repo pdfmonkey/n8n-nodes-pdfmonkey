@@ -152,6 +152,18 @@ export class PDFMonkey implements INodeType {
 				],
 			},
 			{
+				displayName: 'Custom Filename',
+				name: 'filename',
+				type: 'string',
+				default: '',
+				description: 'You can specify a custom filename for generated documents. A random value will be used if left empty.',
+				displayOptions: {
+					show: {
+						operation: ['generateDocument'],
+					},
+				},
+			},
+			{
 				displayName: 'Meta (JSON)',
 				name: 'meta',
 				type: 'json',
@@ -280,7 +292,13 @@ export class PDFMonkey implements INodeType {
 						);
 					}
 
-					const meta = this.getNodeParameter('meta', i) as object;
+					const meta = this.getNodeParameter('meta', i) as Record<string, any>;
+					const filename = this.getNodeParameter('filename', i) as string;
+
+					if (!meta._filename && typeof filename === 'string' && filename.length > 0) {
+						meta._filename = filename;
+					}
+
 					const waitForCompletion = this.getNodeParameter('waitForCompletion', i) as boolean;
 					const status = 'pending';
 
