@@ -6,7 +6,6 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { PDFMonkeyResponse } from './interfaces/PDFMonkeyResponse.interface';
-import { extractFilename } from './utils/helpers';
 
 export class PDFMonkey implements INodeType {
 	description: INodeTypeDescription = {
@@ -354,8 +353,7 @@ export class PDFMonkey implements INodeType {
 							encoding: null,
 						});
 
-						// Get the best filename from document data
-						const filename = extractFilename(document);
+						const filename = document.filename as string;
 
 						this.logger.info(
 							`📥 PDFMonkey: PDF file from document (${documentId}) downloaded with success! Filename: ${filename}`,
@@ -428,8 +426,7 @@ export class PDFMonkey implements INodeType {
 						encoding: null,
 					});
 
-					// Get the best filename from document data
-					const filename = extractFilename(document);
+					const filename = document.filename as string;
 
 					this.logger.info(
 						`📥 PDFMonkey: PDF file from document (${document.id}) downloaded with success! Filename: ${filename}`,
