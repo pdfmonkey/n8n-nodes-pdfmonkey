@@ -6,7 +6,6 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { PDFMonkeyResponse } from './interfaces/PDFMonkeyResponse.interface';
-import { extractFilename } from './utils/helpers';
 
 export class PDFMonkey implements INodeType {
 	description: INodeTypeDescription = {
@@ -55,8 +54,8 @@ export class PDFMonkey implements INodeType {
 					{
 						name: 'Delete Document',
 						value: 'deleteDocument',
-						description: 'Delete a generated PDF document',
-						action: 'Delete a generated PDF document',
+						description: 'Delete an existing PDF document',
+						action: 'Delete an existing PDF document',
 					},
 				],
 				default: 'generateDocument',
@@ -68,7 +67,7 @@ export class PDFMonkey implements INodeType {
 				type: 'string',
 				default: '',
 				required: true,
-				description: 'The ID of the PDFMonkey template to use for generating the PDF',
+				description: 'The ID of the PDFMonkey template to use to generate the PDF',
 				displayOptions: {
 					show: {
 						operation: ['generateDocument'],
@@ -153,6 +152,18 @@ export class PDFMonkey implements INodeType {
 				],
 			},
 			{
+				displayName: 'Custom Filename',
+				name: 'filename',
+				type: 'string',
+				default: '',
+				description: 'You can specify a custom filename for generated documents. A random value will be used if left empty.',
+				displayOptions: {
+					show: {
+						operation: ['generateDocument'],
+					},
+				},
+			},
+			{
 				displayName: 'Meta (JSON)',
 				name: 'meta',
 				type: 'json',
@@ -215,7 +226,7 @@ export class PDFMonkey implements INodeType {
 					const payloadInputMethod = this.getNodeParameter('payloadInputMethod', i) as string;
 
 					// Process payload based on input method
-					let finalPayload = {};
+					let finalPayload;
 					if (payloadInputMethod === 'json') {
 						// JSON input - use as is
 						finalPayload = this.getNodeParameter('payload', i) as object;
@@ -281,7 +292,13 @@ export class PDFMonkey implements INodeType {
 						);
 					}
 
-					const meta = this.getNodeParameter('meta', i) as object;
+					const meta = this.getNodeParameter('meta', i) as Record<string, any>;
+					const filename = this.getNodeParameter('filename', i) as string;
+
+					if (!meta._filename && typeof filename === 'string' && filename.length > 0) {
+						meta._filename = filename;
+					}
+
 					const waitForCompletion = this.getNodeParameter('waitForCompletion', i) as boolean;
 					const status = 'pending';
 
@@ -326,7 +343,10 @@ export class PDFMonkey implements INodeType {
 						// Wait 2 seconds before next check
 						const waitUntil = Date.now() + 2000;
 						while (Date.now() < waitUntil) {
-							// Empty loop to create delay
+							// Yield to event loop every 200ms to avoid blocking
+							if (Date.now() % 200 < 10) {
+								await new Promise<void>(resolve => resolve());
+							}
 						}
 
 						response = (await this.helpers
@@ -354,8 +374,7 @@ export class PDFMonkey implements INodeType {
 							encoding: null,
 						});
 
-						// Get the best filename from document data
-						const filename = extractFilename(document);
+						const filename = document.filename as string;
 
 						this.logger.info(
 							`📥 PDFMonkey: PDF file from document (${documentId}) downloaded with success! Filename: ${filename}`,
@@ -428,8 +447,7 @@ export class PDFMonkey implements INodeType {
 						encoding: null,
 					});
 
-					// Get the best filename from document data
-					const filename = extractFilename(document);
+					const filename = document.filename as string;
 
 					this.logger.info(
 						`📥 PDFMonkey: PDF file from document (${document.id}) downloaded with success! Filename: ${filename}`,
