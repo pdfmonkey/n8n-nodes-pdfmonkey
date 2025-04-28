@@ -6,7 +6,6 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { PDFMonkeyResponse } from './interfaces/PDFMonkeyResponse.interface';
-import { extractFilename } from './utils/helpers';
 
 export class PDFMonkeyTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -15,7 +14,7 @@ export class PDFMonkeyTrigger implements INodeType {
 		icon: 'file:PDFMonkey.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'Triggers when PDFMonkey sends a webhook and download the PDF if successful',
+		description: 'Triggers when PDFMonkey sends a webhook and downloads the PDF if successful',
 		defaults: {
 			name: 'PDFMonkey Trigger',
 		},
@@ -62,10 +61,10 @@ export class PDFMonkeyTrigger implements INodeType {
 			checksum: document.checksum,
 			generation_logs: document.generation_logs,
 			preview_url: document.preview_url,
-			filename: extractFilename(document),
+			filename: document.filename,
 		};
 
-		// If document is not successful, just return the status
+		// If document is not successful, just return the response data
 		if (document.status !== 'success') {
 			return {
 				workflowData: [
@@ -87,8 +86,7 @@ export class PDFMonkeyTrigger implements INodeType {
 			encoding: null,
 		});
 
-		// Get the best filename from document data
-		const filename = extractFilename(document);
+		const filename = document.filename as string;
 
 		this.logger.info(
 			`📥 PDFMonkey: PDF file from document (${document.id}) downloaded with success! Filename: ${filename}`,
