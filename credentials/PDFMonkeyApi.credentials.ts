@@ -1,4 +1,4 @@
-import { ICredentialType, NodePropertyTypes } from 'n8n-workflow';
+import { ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export class PDFMonkeyApi implements ICredentialType {
 	name = 'pdfMonkeyApi';
