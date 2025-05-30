@@ -1,4 +1,4 @@
-import { PDFMonkey } from './PdfMonkey.node';
-import { PDFMonkeyTrigger } from './PdfMonkeyTrigger.node';
+import { PdfMonkey } from './PdfMonkey.node';
+import { PdfMonkeyTrigger } from './PdfMonkeyTrigger.node';
 
-export { PDFMonkey, PDFMonkeyTrigger };
+export { PdfMonkey, PdfMonkeyTrigger };

@@ -4,22 +4,31 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
+	INodeCredentialTestResult,
+	IExecuteFunctions,
+	NodeConnectionType,
 } from 'n8n-workflow';
 import { PDFMonkeyResponse } from './interfaces/PDFMonkeyResponse.interface';
 
-export class PDFMonkeyTrigger implements INodeType {
+export class PdfMonkeyTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PDFMonkey Trigger',
+		displayName: 'PdfMonkey Trigger',
 		name: 'pdfMonkeyTrigger',
 		icon: 'file:PDFMonkey.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'Triggers when PDFMonkey sends a webhook and downloads the PDF if successful',
+		description: 'Triggers when PdfMonkey sends a webhook and downloads the PDF if successful',
 		defaults: {
-			name: 'PDFMonkey Trigger',
+			name: 'PdfMonkey Trigger',
 		},
+		credentials: [
+			{
+				name: 'pdfMonkeyApi',
+				required: true,
+			},
+		],
 		inputs: [],
-		outputs: ['main'],
+		outputs: [NodeConnectionType.Main],
 		webhooks: [
 			{
 				name: 'default',
@@ -34,7 +43,7 @@ export class PDFMonkeyTrigger implements INodeType {
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const requestBody = this.getBodyData() as PDFMonkeyResponse;
 
-		this.logger.info(
+		this.logger.debug(
 			`📡 Webhook received for PDFMonkey with data: ${JSON.stringify(requestBody, null, 2)}`,
 		);
 
@@ -71,6 +80,7 @@ export class PDFMonkeyTrigger implements INodeType {
 					[
 						{
 							json: responseData,
+							pairedItem: { item: 0 },
 						},
 					],
 				],
@@ -78,17 +88,21 @@ export class PDFMonkeyTrigger implements INodeType {
 		}
 
 		// Document is successful, download the PDF if download_url exists
-		this.logger.info(`📄 PDFMonkey: Document ${document.id} is ready for download`);
+		this.logger.debug(`📄 PDFMonkey: Document ${document.id} is ready for download`);
 
-		const pdfBuffer = await this.helpers.request({
-			method: 'GET',
-			url: document.download_url as string,
-			encoding: null,
-		});
+		const pdfBuffer = await this.helpers.httpRequestWithAuthentication.call(
+			this,
+			'pdfMonkeyApi',
+			{
+				method: 'GET',
+				url: document.download_url as string,
+				encoding: 'arraybuffer',
+			},
+		);
 
 		const filename = document.filename as string;
 
-		this.logger.info(
+		this.logger.debug(
 			`📥 PDFMonkey: PDF file from document (${document.id}) downloaded with success! Filename: ${filename}`,
 		);
 
@@ -100,9 +114,28 @@ export class PDFMonkeyTrigger implements INodeType {
 						binary: {
 							data: await this.helpers.prepareBinaryData(pdfBuffer, filename, 'application/pdf'),
 						},
+						pairedItem: { item: 0 },
 					},
 				],
 			],
 		};
+	}
+
+	async test(this: IExecuteFunctions): Promise<INodeCredentialTestResult> {
+		try {
+			await this.helpers.request({
+				method: 'GET',
+				url: 'https://api.pdfmonkey.io/api/v1/document_templates',
+			});
+			return {
+				status: 'OK',
+				message: 'Connection successful!',
+			};
+		} catch (error) {
+			return {
+				status: 'Error',
+				message: `Connection failed: ${error.message}`,
+			};
+		}
 	}
 }
