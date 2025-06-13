@@ -27,7 +27,7 @@ export class PdfMonkeyTrigger implements INodeType {
 			},
 		],
 		inputs: [],
-		outputs: [NodeConnectionType.Main],
+		outputs: ['main'],
 		webhooks: [
 			{
 				name: 'default',
@@ -74,15 +74,11 @@ export class PdfMonkeyTrigger implements INodeType {
 		// Document is successful, download the PDF if download_url exists
 		this.logger.debug(`📄 PDFMonkey: Document ${documentCard.id} is ready for download`);
 
-		const pdfBuffer = await this.helpers.httpRequestWithAuthentication.call(
-			this,
-			'pdfMonkeyApi',
-			{
-				method: 'GET',
-				url: documentCard.download_url as string,
-				encoding: 'arraybuffer',
-			},
-		);
+		const pdfBuffer = await this.helpers.httpRequestWithAuthentication.call(this, 'pdfMonkeyApi', {
+			method: 'GET',
+			url: documentCard.download_url as string,
+			encoding: 'arraybuffer',
+		});
 
 		const filename = documentCard.filename!;
 

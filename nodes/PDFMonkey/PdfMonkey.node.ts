@@ -6,7 +6,6 @@ import {
 	NodeOperationError,
 	INodeCredentialTestResult,
 	IPairedItemData,
-	NodeConnectionType,
 } from 'n8n-workflow';
 import {
 	IPDFMonkeyDocument,
@@ -34,8 +33,8 @@ export class PdfMonkey implements INodeType {
 				required: true,
 			},
 		],
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		properties: [
 			{
 				displayName: 'Actions',
@@ -166,7 +165,8 @@ export class PdfMonkey implements INodeType {
 				name: 'filename',
 				type: 'string',
 				default: '',
-				description: 'You can specify a custom filename for generated documents. A random value will be used if left empty.',
+				description:
+					'You can specify a custom filename for generated documents. A random value will be used if left empty.',
 				displayOptions: {
 					show: {
 						operation: ['generateDocument'],
@@ -309,24 +309,20 @@ export class PdfMonkey implements INodeType {
 					let response: IPDFMonkeyDocumentResponse | IPDFMonkeyDocumentCardResponse;
 
 					// Initial document creation
-					response = (await this.helpers.httpRequestWithAuthentication.call(
-						this,
-						'pdfMonkeyApi',
-						{
-							method: 'POST',
-							url: 'https://api.pdfmonkey.io/api/v1/documents',
-							headers: {
-								'Content-Type': 'application/json',
-							},
-							body: {
-								document_template_id: documentTemplateId,
-								payload: finalPayload,
-								meta,
-								status,
-							},
-							json: true,
+					response = (await this.helpers.httpRequestWithAuthentication.call(this, 'pdfMonkeyApi', {
+						method: 'POST',
+						url: 'https://api.pdfmonkey.io/api/v1/documents',
+						headers: {
+							'Content-Type': 'application/json',
 						},
-					)) as IPDFMonkeyDocumentResponse;
+						body: {
+							document_template_id: documentTemplateId,
+							payload: finalPayload,
+							meta,
+							status,
+						},
+						json: true,
+					})) as IPDFMonkeyDocumentResponse;
 
 					this.logger.debug(
 						`✅ PDFMonkey: Document creation started, documentId: ${response.document.id}`,
@@ -354,20 +350,16 @@ export class PdfMonkey implements INodeType {
 						while (Date.now() < waitUntil) {
 							// Yield to event loop every 200ms to avoid blocking
 							if (Date.now() % 200 < 10) {
-								await new Promise<void>(resolve => resolve());
+								await new Promise<void>((resolve) => resolve());
 							}
 						}
 
-						response = (await this.helpers
-							.httpRequestWithAuthentication.call(
-								this,
-								'pdfMonkeyApi',
-								{
-									method: 'GET',
- 								url: `https://api.pdfmonkey.io/api/v1/document_cards/${documentId}`,
-									json: true,
-								},
-							)
+						response = (await this.helpers.httpRequestWithAuthentication
+							.call(this, 'pdfMonkeyApi', {
+								method: 'GET',
+								url: `https://api.pdfmonkey.io/api/v1/document_cards/${documentId}`,
+								json: true,
+							})
 							.catch(() => {
 								/* ignore errors during wait */
 							})) as IPDFMonkeyDocumentCardResponse;
@@ -426,7 +418,9 @@ export class PdfMonkey implements INodeType {
 					)) as IPDFMonkeyDocumentResponse;
 
 					const document = response.document;
-					this.logger.debug(`📄 PDFMonkey: Status of Document (${document.id}): ${document.status}`);
+					this.logger.debug(
+						`📄 PDFMonkey: Status of Document (${document.id}): ${document.status}`,
+					);
 
 					returnData.push({ json: response, pairedItem });
 				} else if (operation === 'downloadPdf') {
@@ -495,14 +489,10 @@ export class PdfMonkey implements INodeType {
 					const documentId = this.getNodeParameter('documentId', i) as string;
 
 					try {
-						await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'pdfMonkeyApi',
-							{
-								method: 'DELETE',
-								url: `https://api.pdfmonkey.io/api/v1/documents/${documentId}`,
-							},
-						);
+						await this.helpers.httpRequestWithAuthentication.call(this, 'pdfMonkeyApi', {
+							method: 'DELETE',
+							url: `https://api.pdfmonkey.io/api/v1/documents/${documentId}`,
+						});
 
 						this.logger.debug(`🗑️ PDFMonkey: Document ${documentId} deleted successfully`);
 
@@ -526,7 +516,12 @@ export class PdfMonkey implements INodeType {
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
-					returnData.push({ json: { error: error.message }, pairedItem: { item: i } });
+					returnData.push({
+						json: {
+							error: error.message,
+						},
+						pairedItem: { item: i },
+					});
 					continue;
 				}
 				throw error;
@@ -538,14 +533,10 @@ export class PdfMonkey implements INodeType {
 
 	async test(this: IExecuteFunctions): Promise<INodeCredentialTestResult> {
 		try {
-			await this.helpers.httpRequestWithAuthentication.call(
-				this,
-				'pdfMonkeyApi',
-				{
-					method: 'GET',
-					url: 'https://api.pdfmonkey.io/api/v1/document_templates',
-				},
-			);
+			await this.helpers.httpRequestWithAuthentication.call(this, 'pdfMonkeyApi', {
+				method: 'GET',
+				url: 'https://api.pdfmonkey.io/api/v1/document_templates',
+			});
 			return {
 				status: 'OK',
 				message: 'Connection successful!',
