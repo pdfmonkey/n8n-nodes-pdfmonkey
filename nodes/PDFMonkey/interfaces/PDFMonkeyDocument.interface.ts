@@ -1,20 +1,44 @@
 import { IDataObject } from 'n8n-workflow';
 
-export interface PDFMonkeyDocument extends IDataObject {
+type OutputType = 'image' | 'pdf';
+type DocumentStatus = 'draft' | 'pending' | 'generating' | 'success' | 'failure';
+
+export interface IPDFMonkeyDocument extends IDataObject {
 	id: string;
-	status: string;
-	download_url: string | null;
-	document_template_id: string;
-	document_template_identifier: string;
-	created_at: string;
-	updated_at: string;
 	app_id: string;
-	failure_cause: string | null;
-	meta: IDataObject | string | null;
-	public_share_link: string | null;
-	xml_data: string | null;
-	payload: string;
 	checksum: string;
-	generation_logs: string[];
+	created_at: string;
+	document_template_id: string;
+	download_url: string | null;
+	failure_cause: string | null;
+	filename: string | null;
+	generation_logs: {
+		type: string;
+		message: string;
+		timestamp: string;
+	}[];
+	meta: string | null;
+	output_type: OutputType;
+	payload: string | null;
 	preview_url: string;
+	public_share_link: string | null;
+	status: DocumentStatus;
+	updated_at: string;
+	xml_data: string | null;
+}
+
+export interface IPDFMonkeyDocumentCard extends IDataObject {
+	app_id: string;
+	created_at: string;
+	document_template_identifier: string;
+	document_template_id: string;
+	download_url: string | null;
+	failure_cause: string | null;
+	filename: string | null;
+	meta: string;
+	output_type: OutputType;
+	preview_url: string;
+	public_share_link: string | null;
+	status: DocumentStatus;
+	updated_at: string;
 }

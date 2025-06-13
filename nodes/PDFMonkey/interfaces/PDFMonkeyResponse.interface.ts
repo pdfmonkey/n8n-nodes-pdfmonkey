@@ -1,6 +1,10 @@
 import { IDataObject } from 'n8n-workflow';
-import { PDFMonkeyDocument } from './PDFMonkeyDocument.interface';
+import { IPDFMonkeyDocument, IPDFMonkeyDocumentCard } from './PDFMonkeyDocument.interface';
 
-export interface PDFMonkeyResponse extends IDataObject {
-	document: PDFMonkeyDocument;
+export interface IPDFMonkeyDocumentResponse extends IDataObject {
+	document: IPDFMonkeyDocument;
+}
+
+export interface IPDFMonkeyDocumentCardResponse extends IDataObject {
+	document_card: IPDFMonkeyDocumentCard;
 }

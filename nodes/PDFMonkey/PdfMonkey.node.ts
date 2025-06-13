@@ -8,7 +8,14 @@ import {
 	IPairedItemData,
 	NodeConnectionType,
 } from 'n8n-workflow';
-import { PDFMonkeyResponse } from './interfaces/PDFMonkeyResponse.interface';
+import {
+	IPDFMonkeyDocument,
+	IPDFMonkeyDocumentCard,
+} from './interfaces/PDFMonkeyDocument.interface';
+import {
+	IPDFMonkeyDocumentCardResponse,
+	IPDFMonkeyDocumentResponse,
+} from './interfaces/PDFMonkeyResponse.interface';
 
 export class PdfMonkey implements INodeType {
 	description: INodeTypeDescription = {
@@ -299,8 +306,10 @@ export class PdfMonkey implements INodeType {
 					const waitForCompletion = this.getNodeParameter('waitForCompletion', i) as boolean;
 					const status = 'pending';
 
+					let response: IPDFMonkeyDocumentResponse | IPDFMonkeyDocumentCardResponse;
+
 					// Initial document creation
-					let response = (await this.helpers.httpRequestWithAuthentication.call(
+					response = (await this.helpers.httpRequestWithAuthentication.call(
 						this,
 						'pdfMonkeyApi',
 						{
@@ -317,7 +326,7 @@ export class PdfMonkey implements INodeType {
 							},
 							json: true,
 						},
-					)) as PDFMonkeyResponse;
+					)) as IPDFMonkeyDocumentResponse;
 
 					this.logger.debug(
 						`✅ PDFMonkey: Document creation started, documentId: ${response.document.id}`,
@@ -333,13 +342,13 @@ export class PdfMonkey implements INodeType {
 					}
 
 					// Simple polling approach - keep checking status until success or failed
-					const documentId = response.document.id;
-					let document = response.document;
+					let documentOrCard: IPDFMonkeyDocument | IPDFMonkeyDocumentCard = response.document;
+					const documentId = documentOrCard.id;
 
 					this.logger.debug(`⏳ PDFMonkey: Waiting for document ${documentId} to complete...`);
 
 					// Loop until we reach success or failure status
-					while (document.status !== 'success' && document.status !== 'failure') {
+					while (documentOrCard.status !== 'success' && documentOrCard.status !== 'failure') {
 						// Wait 2 seconds before next check
 						const waitUntil = Date.now() + 2000;
 						while (Date.now() < waitUntil) {
@@ -361,14 +370,16 @@ export class PdfMonkey implements INodeType {
 							)
 							.catch(() => {
 								/* ignore errors during wait */
-							})) as PDFMonkeyResponse;
+							})) as IPDFMonkeyDocumentCardResponse;
 
-						document = response.documen_card;
-						this.logger.debug(`📊 PDFMonkey: Document ${documentId} status: ${document.status}`);
+						documentOrCard = response.document_card;
+						this.logger.debug(
+							`📊 PDFMonkey: Document ${documentId} status: ${documentOrCard.status}`,
+						);
 					}
 
 					// If we've reached success status, download the PDF
-					if (document.status === 'success' && document.download_url) {
+					if (documentOrCard.status === 'success' && documentOrCard.download_url) {
 						this.logger.debug(`📄 PDFMonkey: Document ${documentId} is ready for download`);
 
 						const pdfBuffer = await this.helpers.httpRequestWithAuthentication.call(
@@ -376,12 +387,12 @@ export class PdfMonkey implements INodeType {
 							'pdfMonkeyApi',
 							{
 								method: 'GET',
-								url: document.download_url as string,
+								url: documentOrCard.download_url as string,
 								encoding: 'arraybuffer',
 							},
 						);
 
-						const filename = document.filename as string;
+						const filename = documentOrCard.filename as string;
 
 						this.logger.debug(
 							`📥 PDFMonkey: PDF file from document (${documentId}) downloaded with success! Filename: ${filename}`,
@@ -394,10 +405,10 @@ export class PdfMonkey implements INodeType {
 							},
 							pairedItem,
 						});
-					} else if (document.status === 'failure') {
+					} else if (documentOrCard.status === 'failure') {
 						// If generation failed, log the error and return the response
 						this.logger.error(
-							`❌ PDFMonkey: Document generation failed for ${documentId}: ${document.failure_cause || 'Unknown error'}`,
+							`❌ PDFMonkey: Document generation failed for ${documentId}: ${documentOrCard.failure_cause || 'Unknown error'}`,
 						);
 						returnData.push({ json: response, pairedItem });
 					}
@@ -412,7 +423,7 @@ export class PdfMonkey implements INodeType {
 							url: `https://api.pdfmonkey.io/api/v1/documents/${documentId}`,
 							json: true,
 						},
-					)) as PDFMonkeyResponse;
+					)) as IPDFMonkeyDocumentResponse;
 
 					const document = response.document;
 					this.logger.debug(`📄 PDFMonkey: Status of Document (${document.id}): ${document.status}`);
@@ -426,23 +437,23 @@ export class PdfMonkey implements INodeType {
 						'pdfMonkeyApi',
 						{
 							method: 'GET',
-							url: `https://api.pdfmonkey.io/api/v1/documents/${documentId}`,
+							url: `https://api.pdfmonkey.io/api/v1/document_cards/${documentId}`,
 							json: true,
 						},
-					)) as PDFMonkeyResponse;
+					)) as IPDFMonkeyDocumentCardResponse;
 
-					const document = response.document;
+					const documentCard = response.document_card;
 
 					// If document is not successful, just return the status
-					if (document.status !== 'success') {
+					if (documentCard.status !== 'success') {
 						this.logger.warn(
-							`⚠️ PDFMonkey: Document ${document.id} is not ready for download. Status: ${document.status}`,
+							`⚠️ PDFMonkey: Document ${documentCard.id} is not ready for download. Status: ${documentCard.status}`,
 						);
 						returnData.push({
 							json: {
 								message: `Document is not ready for download`,
-								documentId: document.id,
-								status: document.status,
+								documentId: documentCard.id,
+								status: documentCard.status,
 							},
 							pairedItem,
 						});
@@ -450,29 +461,29 @@ export class PdfMonkey implements INodeType {
 					}
 
 					// Document is successful, download the PDF
-					this.logger.debug(`📄 PDFMonkey: Document ${document.id} is ready for download`);
+					this.logger.debug(`📄 PDFMonkey: Document ${documentCard.id} is ready for download`);
 
 					const pdfBuffer = await this.helpers.httpRequestWithAuthentication.call(
 						this,
 						'pdfMonkeyApi',
 						{
 							method: 'GET',
-							url: document.download_url as string,
+							url: documentCard.download_url as string,
 							encoding: 'arraybuffer',
 						},
 					);
 
-					const filename = document.filename as string;
+					const filename = documentCard.filename as string;
 
 					this.logger.debug(
-						`📥 PDFMonkey: PDF file from document (${document.id}) downloaded with success! Filename: ${filename}`,
+						`📥 PDFMonkey: PDF file from document (${documentCard.id}) downloaded with success! Filename: ${filename}`,
 					);
 
 					returnData.push({
 						json: {
 							message: `PDF downloaded successfully`,
-							documentId: document.id,
-							status: document.status,
+							documentId: documentCard.id,
+							status: documentCard.status,
 							filename: filename,
 						},
 						binary: {
