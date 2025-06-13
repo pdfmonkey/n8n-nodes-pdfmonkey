@@ -31,7 +31,7 @@ The PDFMonkey node provides the following operations:
   - Uses a simple 2-second interval between status checks when polling
   - Downloads the PDF automatically if generation is successful and auto-polling is enabled
 - **Get Document**: Get document details and check its generation status
-- **Download PDF**: Download a generated PDF document and save it as a binary file
+- **Download File**: Download a generated PDF or image document and save it as a binary file
 - **Delete Document**: Delete a previously generated PDF document from PDFMonkey
 
 ### PDFMonkey Trigger Node
@@ -39,7 +39,7 @@ The PDFMonkey node provides the following operations:
 The PDFMonkey Trigger node listens for webhooks from PDFMonkey and processes them:
 
 - **Webhook Receiver**: Triggers when PDFMonkey sends a webhook notification
-- **Automatic PDF Download**: Automatically downloads the PDF when the document generation is successful
+- **Automatic File Download**: Automatically downloads the PDF or image when the document generation is successful
 - **Intelligent Filename Handling**: Extracts the filename from metadata
 - **Complete Response Data**: Returns all document properties from the PDFMonkey API in the JSON output
 
@@ -113,20 +113,20 @@ The Generate Document operation includes a "Wait For Completion" option that con
 
 1. When **enabled** (default):
    - The node checks the document status every 2 seconds until it reaches a final state (success or failure)
-   - If successful, it automatically downloads the PDF and returns it as a binary file
+   - If successful, it automatically downloads the PDF or image and returns it as a binary file
    - Simple, straightforward polling mechanism with minimal overhead
    - Progress is logged with status updates during polling
 
 2. When **disabled**:
    - The node returns immediately after creating the document
    - The response includes the document ID and initial pending status
-   - You can later use the Get Document or Download PDF operations to check status and retrieve the document
+   - You can later use the Get Document or Download File operations to check status and retrieve the document
 
-This feature is especially useful for smaller documents that generate quickly, providing a simpler workflow without needing separate Get Document and Download PDF steps. For larger documents that take longer to generate, you may want to disable this option and use a separate Get Document or Download PDF operation later.
+This feature is especially useful for smaller documents that generate quickly, providing a simpler workflow without needing separate Get Document and Download File steps. For larger documents that take longer to generate, you may want to disable this option and use a separate Get Document or Download File operation later.
 
 ### Custom Filenames
 
-You can set a custom filename for your generated PDFs using the Meta field in the Generate Document operation:
+You can set a custom filename for your generated PDF or image using the Meta field in the Generate Document operation:
 
 1. In the Meta (JSON) field, include the `_filename` property:
 ```json

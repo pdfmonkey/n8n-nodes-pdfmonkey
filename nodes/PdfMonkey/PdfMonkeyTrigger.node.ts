@@ -8,6 +8,7 @@ import {
 	IExecuteFunctions,
 } from 'n8n-workflow';
 import { IPdfMonkeyWebhookContent } from './interfaces/PdfMonkeyResponse.interface';
+import { downloadFile, mimeType } from './common';
 
 export class PdfMonkeyTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -16,7 +17,8 @@ export class PdfMonkeyTrigger implements INodeType {
 		icon: 'file:PDFMonkey.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'Triggers when PdfMonkey sends a webhook and downloads the PDF if successful',
+		description:
+			'Triggers when PdfMonkey sends a webhook and downloads the PDF or image if successful',
 		defaults: {
 			name: 'PDFMonkey Trigger',
 		},
@@ -71,13 +73,12 @@ export class PdfMonkeyTrigger implements INodeType {
 			};
 		}
 
-		// Document is successful, download the PDF if download_url exists
+		// Document is successful, download the PDF or image if download_url exists
 		this.logger.debug(`📄 PDFMonkey: Document ${documentCard.id} is ready for download`);
 
-		const pdfBuffer = await this.helpers.httpRequestWithAuthentication.call(this, 'pdfMonkeyApi', {
-			method: 'GET',
-			url: documentCard.download_url as string,
-			encoding: 'arraybuffer',
+		const pdfBuffer = await downloadFile({
+			context: this,
+			downloadUrl: documentCard.download_url!,
 		});
 
 		const filename = documentCard.filename!;
@@ -92,7 +93,7 @@ export class PdfMonkeyTrigger implements INodeType {
 					{
 						json: responseData,
 						binary: {
-							data: await this.helpers.prepareBinaryData(pdfBuffer, filename, 'application/pdf'),
+							data: await this.helpers.prepareBinaryData(pdfBuffer, filename, mimeType(filename)),
 						},
 						pairedItem: { item: 0 },
 					},

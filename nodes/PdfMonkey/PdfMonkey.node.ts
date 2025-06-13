@@ -15,6 +15,7 @@ import {
 	IPdfMonkeyDocumentCardResponse,
 	IPdfMonkeyDocumentResponse,
 } from './interfaces/PdfMonkeyResponse.interface';
+import { downloadFile, mimeType } from './common';
 
 export class PdfMonkey implements INodeType {
 	description: INodeTypeDescription = {
@@ -55,10 +56,10 @@ export class PdfMonkey implements INodeType {
 						action: 'Get document details and status',
 					},
 					{
-						name: 'Download PDF',
-						value: 'downloadPdf',
-						description: 'Download a generated PDF',
-						action: 'Download a generated PDF',
+						name: 'Download File',
+						value: 'downloadFile',
+						description: 'Download a generated PDF or Image',
+						action: 'Download a generated PDF or image',
 					},
 					{
 						name: 'Delete Document',
@@ -192,7 +193,7 @@ export class PdfMonkey implements INodeType {
 				type: 'boolean',
 				default: true,
 				description:
-					'Whether to wait for document generation to complete and download the PDF automatically',
+					'Whether to wait for document generation to complete and download the PDF or image automatically',
 				displayOptions: {
 					show: {
 						operation: ['generateDocument'],
@@ -208,7 +209,7 @@ export class PdfMonkey implements INodeType {
 				description: 'The ID of the generated document',
 				displayOptions: {
 					show: {
-						operation: ['getDocument', 'downloadPdf', 'deleteDocument'],
+						operation: ['getDocument', 'downloadFile', 'deleteDocument'],
 					},
 				},
 			},
@@ -370,20 +371,14 @@ export class PdfMonkey implements INodeType {
 						);
 					}
 
-					// If we've reached success status, download the PDF
-					if (documentOrCard.status === 'success' && documentOrCard.download_url) {
+					// If we've reached success status, download the PDF or image
+					if (documentOrCard.status === 'success') {
 						this.logger.debug(`📄 PDFMonkey: Document ${documentId} is ready for download`);
 
-						const pdfBuffer = await this.helpers.httpRequestWithAuthentication.call(
-							this,
-							'pdfMonkeyApi',
-							{
-								method: 'GET',
-								url: documentOrCard.download_url as string,
-								encoding: 'arraybuffer',
-							},
-						);
-
+						const pdfBuffer = await downloadFile({
+							context: this,
+							downloadUrl: documentOrCard.download_url!,
+						});
 						const filename = documentOrCard.filename as string;
 
 						this.logger.debug(
@@ -393,7 +388,7 @@ export class PdfMonkey implements INodeType {
 						returnData.push({
 							json: response,
 							binary: {
-								data: await this.helpers.prepareBinaryData(pdfBuffer, filename, 'application/pdf'),
+								data: await this.helpers.prepareBinaryData(pdfBuffer, filename, mimeType(filename)),
 							},
 							pairedItem,
 						});
@@ -423,7 +418,7 @@ export class PdfMonkey implements INodeType {
 					);
 
 					returnData.push({ json: response, pairedItem });
-				} else if (operation === 'downloadPdf') {
+				} else if (operation === 'downloadFile') {
 					const documentId = this.getNodeParameter('documentId', i) as string;
 
 					const response = (await this.helpers.httpRequestWithAuthentication.call(
@@ -454,18 +449,13 @@ export class PdfMonkey implements INodeType {
 						continue;
 					}
 
-					// Document is successful, download the PDF
+					// Document is successful, download the PDF or image
 					this.logger.debug(`📄 PDFMonkey: Document ${documentCard.id} is ready for download`);
 
-					const pdfBuffer = await this.helpers.httpRequestWithAuthentication.call(
-						this,
-						'pdfMonkeyApi',
-						{
-							method: 'GET',
-							url: documentCard.download_url as string,
-							encoding: 'arraybuffer',
-						},
-					);
+					const pdfBuffer = await downloadFile({
+						context: this,
+						downloadUrl: documentCard.download_url!,
+					});
 
 					const filename = documentCard.filename as string;
 
@@ -475,13 +465,13 @@ export class PdfMonkey implements INodeType {
 
 					returnData.push({
 						json: {
-							message: `PDF downloaded successfully`,
+							message: `File downloaded successfully`,
 							documentId: documentCard.id,
 							status: documentCard.status,
 							filename: filename,
 						},
 						binary: {
-							data: await this.helpers.prepareBinaryData(pdfBuffer, filename, 'application/pdf'),
+							data: await this.helpers.prepareBinaryData(pdfBuffer, filename, mimeType(filename)),
 						},
 						pairedItem,
 					});
