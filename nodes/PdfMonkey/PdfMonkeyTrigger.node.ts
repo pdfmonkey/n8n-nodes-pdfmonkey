@@ -7,18 +7,18 @@ import {
 	INodeCredentialTestResult,
 	IExecuteFunctions,
 } from 'n8n-workflow';
-import { IPDFMonkeyDocumentCardResponse } from './interfaces/PDFMonkeyResponse.interface';
+import { IPdfMonkeyDocumentCardResponse } from './interfaces/PdfMonkeyResponse.interface';
 
 export class PdfMonkeyTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PdfMonkey Trigger',
+		displayName: 'PDFMonkey Trigger',
 		name: 'pdfMonkeyTrigger',
 		icon: 'file:PDFMonkey.svg',
 		group: ['trigger'],
 		version: 1,
 		description: 'Triggers when PdfMonkey sends a webhook and downloads the PDF if successful',
 		defaults: {
-			name: 'PdfMonkey Trigger',
+			name: 'PDFMonkey Trigger',
 		},
 		credentials: [
 			{
@@ -40,7 +40,7 @@ export class PdfMonkeyTrigger implements INodeType {
 	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		const response = this.getBodyData() as IPDFMonkeyDocumentCardResponse;
+		const response = this.getBodyData() as IPdfMonkeyDocumentCardResponse;
 
 		this.logger.debug(
 			`📡 Webhook received for PDFMonkey with data: ${JSON.stringify(response, null, 2)}`,

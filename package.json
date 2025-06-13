@@ -36,11 +36,11 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/PDFMonkeyApi.credentials.js"
+      "dist/credentials/PdfMonkeyApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/PDFMonkey/PdfMonkey.node.js",
-      "dist/nodes/PDFMonkey/PdfMonkeyTrigger.node.js"
+      "dist/nodes/PdfMonkey/PdfMonkey.node.js",
+      "dist/nodes/PdfMonkey/PdfMonkeyTrigger.node.js"
     ],
     "versionId": "1.0.0",
     "categories": [

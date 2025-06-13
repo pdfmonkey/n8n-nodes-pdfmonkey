@@ -3,7 +3,7 @@ import { IDataObject } from 'n8n-workflow';
 type OutputType = 'image' | 'pdf';
 type DocumentStatus = 'draft' | 'pending' | 'generating' | 'success' | 'failure';
 
-export interface IPDFMonkeyDocument extends IDataObject {
+export interface IPdfMonkeyDocument extends IDataObject {
 	id: string;
 	app_id: string;
 	checksum: string;
@@ -27,7 +27,7 @@ export interface IPDFMonkeyDocument extends IDataObject {
 	xml_data: string | null;
 }
 
-export interface IPDFMonkeyDocumentCard extends IDataObject {
+export interface IPdfMonkeyDocumentCard extends IDataObject {
 	app_id: string;
 	created_at: string;
 	document_template_identifier: string;

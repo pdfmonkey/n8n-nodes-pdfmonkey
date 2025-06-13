@@ -8,17 +8,17 @@ import {
 	IPairedItemData,
 } from 'n8n-workflow';
 import {
-	IPDFMonkeyDocument,
-	IPDFMonkeyDocumentCard,
-} from './interfaces/PDFMonkeyDocument.interface';
+	IPdfMonkeyDocument,
+	IPdfMonkeyDocumentCard,
+} from './interfaces/PdfMonkeyDocument.interface';
 import {
-	IPDFMonkeyDocumentCardResponse,
-	IPDFMonkeyDocumentResponse,
-} from './interfaces/PDFMonkeyResponse.interface';
+	IPdfMonkeyDocumentCardResponse,
+	IPdfMonkeyDocumentResponse,
+} from './interfaces/PdfMonkeyResponse.interface';
 
 export class PdfMonkey implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PdfMonkey',
+		displayName: 'PDFMonkey',
 		name: 'pdfMonkey',
 		icon: 'file:PDFMonkey.svg',
 		group: ['transform'],
@@ -306,7 +306,7 @@ export class PdfMonkey implements INodeType {
 					const waitForCompletion = this.getNodeParameter('waitForCompletion', i) as boolean;
 					const status = 'pending';
 
-					let response: IPDFMonkeyDocumentResponse | IPDFMonkeyDocumentCardResponse;
+					let response: IPdfMonkeyDocumentResponse | IPdfMonkeyDocumentCardResponse;
 
 					// Initial document creation
 					response = (await this.helpers.httpRequestWithAuthentication.call(this, 'pdfMonkeyApi', {
@@ -322,7 +322,7 @@ export class PdfMonkey implements INodeType {
 							status,
 						},
 						json: true,
-					})) as IPDFMonkeyDocumentResponse;
+					})) as IPdfMonkeyDocumentResponse;
 
 					this.logger.debug(
 						`✅ PDFMonkey: Document creation started, documentId: ${response.document.id}`,
@@ -338,7 +338,7 @@ export class PdfMonkey implements INodeType {
 					}
 
 					// Simple polling approach - keep checking status until success or failed
-					let documentOrCard: IPDFMonkeyDocument | IPDFMonkeyDocumentCard = response.document;
+					let documentOrCard: IPdfMonkeyDocument | IPdfMonkeyDocumentCard = response.document;
 					const documentId = documentOrCard.id;
 
 					this.logger.debug(`⏳ PDFMonkey: Waiting for document ${documentId} to complete...`);
@@ -362,7 +362,7 @@ export class PdfMonkey implements INodeType {
 							})
 							.catch(() => {
 								/* ignore errors during wait */
-							})) as IPDFMonkeyDocumentCardResponse;
+							})) as IPdfMonkeyDocumentCardResponse;
 
 						documentOrCard = response.document_card;
 						this.logger.debug(
@@ -415,7 +415,7 @@ export class PdfMonkey implements INodeType {
 							url: `https://api.pdfmonkey.io/api/v1/documents/${documentId}`,
 							json: true,
 						},
-					)) as IPDFMonkeyDocumentResponse;
+					)) as IPdfMonkeyDocumentResponse;
 
 					const document = response.document;
 					this.logger.debug(
@@ -434,7 +434,7 @@ export class PdfMonkey implements INodeType {
 							url: `https://api.pdfmonkey.io/api/v1/document_cards/${documentId}`,
 							json: true,
 						},
-					)) as IPDFMonkeyDocumentCardResponse;
+					)) as IPdfMonkeyDocumentCardResponse;
 
 					const documentCard = response.document_card;
 
