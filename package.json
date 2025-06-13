@@ -39,8 +39,8 @@
       "dist/credentials/PDFMonkeyApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/PDFMonkey/PDFMonkey.node.js",
-      "dist/nodes/PDFMonkey/PDFMonkeyTrigger.node.js"
+      "dist/nodes/PDFMonkey/PdfMonkey.node.js",
+      "dist/nodes/PDFMonkey/PdfMonkeyTrigger.node.js"
     ],
     "versionId": "1.0.0",
     "categories": [
