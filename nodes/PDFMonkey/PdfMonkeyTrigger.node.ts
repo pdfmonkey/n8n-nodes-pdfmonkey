@@ -103,9 +103,9 @@ export class PdfMonkeyTrigger implements INodeType {
 
 	async test(this: IExecuteFunctions): Promise<INodeCredentialTestResult> {
 		try {
-			await this.helpers.request({
+			await this.helpers.httpRequestWithAuthentication.call(this, 'pdfMonkeyApi', {
 				method: 'GET',
-				url: 'https://api.pdfmonkey.io/api/v1/document_templates',
+				url: 'https://api.pdfmonkey.io/api/v1/document_cards',
 			});
 			return {
 				status: 'OK',
