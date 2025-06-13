@@ -7,7 +7,7 @@ import {
 	INodeCredentialTestResult,
 	IExecuteFunctions,
 } from 'n8n-workflow';
-import { IPdfMonkeyDocumentCardResponse } from './interfaces/PdfMonkeyResponse.interface';
+import { IPdfMonkeyWebhookContent } from './interfaces/PdfMonkeyResponse.interface';
 
 export class PdfMonkeyTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -40,13 +40,13 @@ export class PdfMonkeyTrigger implements INodeType {
 	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		const response = this.getBodyData() as IPdfMonkeyDocumentCardResponse;
+		const response = this.getBodyData() as IPdfMonkeyWebhookContent;
 
 		this.logger.debug(
 			`📡 Webhook received for PDFMonkey with data: ${JSON.stringify(response, null, 2)}`,
 		);
 
-		const documentCard = response.document_card;
+		const documentCard = response.document;
 
 		if (!documentCard?.id) {
 			throw new NodeOperationError(this.getNode(), 'Webhook did not provide a valid document ID');

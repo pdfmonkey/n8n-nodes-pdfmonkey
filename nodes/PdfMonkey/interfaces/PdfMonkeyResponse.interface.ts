@@ -8,3 +8,7 @@ export interface IPdfMonkeyDocumentResponse extends IDataObject {
 export interface IPdfMonkeyDocumentCardResponse extends IDataObject {
 	document_card: IPdfMonkeyDocumentCard;
 }
+
+export interface IPdfMonkeyWebhookContent extends IDataObject {
+	document: IPdfMonkeyDocumentCard;
+}
