@@ -1,4 +1,10 @@
-import { ICredentialType, INodeProperties, IHttpRequestOptions, ICredentialDataDecryptedObject, ICredentialTestRequest } from 'n8n-workflow';
+import {
+	ICredentialType,
+	INodeProperties,
+	IHttpRequestOptions,
+	ICredentialDataDecryptedObject,
+	ICredentialTestRequest,
+} from 'n8n-workflow';
 
 export class PDFMonkeyApi implements ICredentialType {
 	name = 'pdfMonkeyApi';
@@ -16,7 +22,10 @@ export class PDFMonkeyApi implements ICredentialType {
 		},
 	];
 
-	async authenticate(credentials: ICredentialDataDecryptedObject, requestOptions: IHttpRequestOptions): Promise<IHttpRequestOptions> {
+	async authenticate(
+		credentials: ICredentialDataDecryptedObject,
+		requestOptions: IHttpRequestOptions,
+	): Promise<IHttpRequestOptions> {
 		requestOptions.headers = {
 			...requestOptions.headers,
 			Authorization: `Bearer ${credentials.apiKey}`,
@@ -27,7 +36,7 @@ export class PDFMonkeyApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://api.pdfmonkey.io',
-			url: '/api/v1/document_templates',
+			url: '/api/v1/current_user',
 			method: 'GET',
 		},
 	};
