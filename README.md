@@ -26,7 +26,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 The PDFMonkey node provides the following operations:
 
 - **Generate Document**: Create a new PDF document using a template and dynamic data
-  - Supports custom metadata including filename customization via the `_filename` property
+  - Supports custom metadata and filename customization
   - Optional auto-polling for document completion (controlled by "Wait For Completion" option)
   - Uses a simple 2-second interval between status checks when polling
   - Downloads the PDF automatically if generation is successful and auto-polling is enabled
@@ -126,20 +126,9 @@ This feature is especially useful for smaller documents that generate quickly, p
 
 ### Custom Filenames
 
-You can set a custom filename for your generated PDF or image using the Meta field in the Generate Document operation:
+You can set a custom filename for your generated PDF or image using the dedicated `Custom Filename` field in the Generate Document operation
 
-1. In the Meta (JSON) field, include the `_filename` property:
-```json
-{
-  "_filename": "invoice-2023-001.pdf"
-}
-```
-
-2. When downloading the PDF (either via the Download PDF operation or through the trigger node), this filename will be used instead of the default "document.pdf".
-
-3. **Note**: The `_filename` property in the metadata is the only way to set a custom filename for your PDFs, as the system will exclusively use this property to determine the filename when downloading documents.
-
-4. You can also include other metadata that will be stored with the document and can be retrieved later.
+If the field is left empty, the node will use the default generated filename.
 
 ## Resources
 

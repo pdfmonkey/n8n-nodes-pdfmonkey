@@ -179,8 +179,7 @@ export class PdfMonkey implements INodeType {
 				name: 'meta',
 				type: 'json',
 				default: '{}',
-				description:
-					'Additional metadata for the document (e.g., custom filename with "_filename" property)',
+				description: 'Additional metadata for the document',
 				displayOptions: {
 					show: {
 						operation: ['generateDocument'],
@@ -297,7 +296,9 @@ export class PdfMonkey implements INodeType {
 						);
 					}
 
-					const meta = this.getNodeParameter('meta', i) as Record<string, any>;
+					const metaString = this.getNodeParameter('meta', i) as string;
+					const meta = metaString ? JSON.parse(metaString) : {};
+
 					const filename = this.getNodeParameter('filename', i) as string;
 
 					if (!meta._filename && typeof filename === 'string' && filename.length > 0) {
