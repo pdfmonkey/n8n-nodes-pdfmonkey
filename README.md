@@ -8,12 +8,12 @@ This is an n8n community node. It lets you use PDFMonkey in your n8n workflows.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-[Installation](#installation)  
-[Operations](#operations)  
-[Credentials](#credentials)  
-[Compatibility](#compatibility)  
-[Usage](#usage)  
-[Resources](#resources)  
+[Installation](#installation)
+[Operations](#operations)
+[Credentials](#credentials)
+[Compatibility](#compatibility)
+[Usage](#usage)
+[Resources](#resources)
 
 ## Installation
 
@@ -63,18 +63,19 @@ This node has been tested with n8n version 1.0.0 and later.
 The Generate Document operation supports two methods for providing template data:
 
 1. **JSON Format**:
+
    - Enter your entire payload as a JSON object
    - Ideal for complex data structures or when copying from another source
    - Example:
      ```json
      {
-       "invoiceNumber": "INV-2023-001",
-       "customerName": "Acme Inc.",
-       "items": [
-         {"name": "Widget", "quantity": 5, "price": 10.99},
-         {"name": "Gadget", "quantity": 2, "price": 24.99}
-       ],
-       "total": 104.93
+     	"invoiceNumber": "INV-2023-001",
+     	"customerName": "Acme Inc.",
+     	"items": [
+     		{ "name": "Widget", "quantity": 5, "price": 10.99 },
+     		{ "name": "Gadget", "quantity": 2, "price": 24.99 }
+     	],
+     	"total": 104.93
      }
      ```
 
@@ -112,6 +113,7 @@ The PDFMonkey node will automatically detect this format, extract the array cont
 The Generate Document operation includes a "Wait For Completion" option that controls whether the node waits for the document to finish generating before continuing the workflow:
 
 1. When **enabled** (default):
+
    - The node checks the document status every 2 seconds until it reaches a final state (success or failure)
    - If successful, it automatically downloads the PDF or image and returns it as a binary file
    - Simple, straightforward polling mechanism with minimal overhead
@@ -132,5 +134,5 @@ If the field is left empty, the node will use the default generated filename.
 
 ## Resources
 
-* [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
-* [PDFMonkey API Documentation](https://docs.pdfmonkey.io/)
+- [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
+- [PDFMonkey API Documentation](https://docs.pdfmonkey.io/)
