@@ -355,7 +355,7 @@ export class PdfMonkey implements INodeType {
 								'pdfMonkeyApi',
 								{
 									method: 'GET',
-									url: `https://api.pdfmonkey.io/api/v1/documents/${documentId}`,
+ 								url: `https://api.pdfmonkey.io/api/v1/document_cards/${documentId}`,
 									json: true,
 								},
 							)
@@ -363,7 +363,7 @@ export class PdfMonkey implements INodeType {
 								/* ignore errors during wait */
 							})) as PDFMonkeyResponse;
 
-						document = response.document;
+						document = response.documen_card;
 						this.logger.debug(`📊 PDFMonkey: Document ${documentId} status: ${document.status}`);
 					}
 
