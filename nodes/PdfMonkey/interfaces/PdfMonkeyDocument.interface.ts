@@ -28,6 +28,7 @@ export interface IPdfMonkeyDocument extends IDataObject {
 }
 
 export interface IPdfMonkeyDocumentCard extends IDataObject {
+	id: string;
 	app_id: string;
 	created_at: string;
 	document_template_identifier: string;
@@ -35,7 +36,7 @@ export interface IPdfMonkeyDocumentCard extends IDataObject {
 	download_url: string | null;
 	failure_cause: string | null;
 	filename: string | null;
-	meta: string;
+	meta: IDataObject | null;
 	output_type: OutputType;
 	preview_url: string;
 	public_share_link: string | null;

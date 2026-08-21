@@ -43,6 +43,44 @@ The PDFMonkey Trigger node listens for webhooks from PDFMonkey and processes the
 - **Intelligent Filename Handling**: Extracts the filename from metadata
 - **Complete Response Data**: Returns all document properties from the PDFMonkey API in the JSON output
 
+#### Testing the Trigger
+
+Select a workspace (and optionally one or more templates), then click **Listen for test event**. n8n
+registers a temporary REST hook with PDFMonkey; generate a document from one of the selected templates
+and the payload will appear in the output panel.
+
+To build the rest of your workflow without generating a document, click **set mock data** in the output
+panel and paste the payload below. It matches what PDFMonkey actually sends
+([webhook documentation](https://pdfmonkey.io/docs/generating-documents/webhooks/)):
+
+```json
+[
+  {
+    "id": "a5e86d72-f5b7-43d4-a04e-8b7e08e6741c",
+    "app_id": "d6b4e8f2-7a3c-4d1e-9f5b-2c8a1d3e6f90",
+    "created_at": "2050-03-13T12:34:56.181+02:00",
+    "document_template_id": "2903f5b4-623b-4e10-b2e3-dc7e2e67ea39",
+    "document_template_identifier": "My Invoice Template",
+    "download_url": "https://pdfmonkey.s3.eu-west-1.amazonaws.com/...",
+    "failure_cause": null,
+    "filename": "2050-03-14 Peter Parker.pdf",
+    "meta": {
+      "_filename": "2050-03-14 Peter Parker.pdf",
+      "clientRef": "spidey-616"
+    },
+    "output_type": "pdf",
+    "preview_url": "https://preview.pdfmonkey.io/pdf/web/viewer.html?file=...",
+    "public_share_link": null,
+    "status": "success",
+    "updated_at": "2050-03-13T12:34:59.412+02:00"
+  }
+]
+```
+
+The webhook carries a DocumentCard, so `payload`, `generation_logs` and `checksum` are not included.
+`download_url` is a signed link valid for one hour. On a real successful event the node also attaches the
+downloaded file as binary data, which mock data cannot reproduce.
+
 ## Credentials
 
 To use the PDFMonkey nodes, you need to have a PDFMonkey account and API key.

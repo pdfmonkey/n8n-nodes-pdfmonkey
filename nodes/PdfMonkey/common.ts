@@ -15,11 +15,34 @@ export async function downloadFile({
 	context: IExecuteFunctions | IWebhookFunctions;
 	downloadUrl: string;
 }) {
-	return await context.helpers.httpRequest({
-		method: 'GET',
-		url: downloadUrl,
-		encoding: 'arraybuffer',
-	});
+	try {
+		return await context.helpers.httpRequest({
+			method: 'GET',
+			url: downloadUrl,
+			encoding: 'arraybuffer',
+		});
+	} catch (error) {
+		// The download URL is presigned, so a failure comes back as an S3 XML error
+		// document naming the actual cause (SignatureDoesNotMatch, InvalidAccessKeyId,
+		// AccessDenied...). n8n only persists error.message, and `encoding: 'arraybuffer'`
+		// means the body is a Buffer, so without this a 403 is indistinguishable from
+		// any other 403 in the execution history.
+		const body = error.response?.data ?? error.response?.body;
+		const details =
+			typeof body === 'string'
+				? body
+				: body instanceof Uint8Array
+					? // A Node Buffer at runtime; typed as Uint8Array here since this package
+						// carries no @types/node, and Uint8Array.toString() takes no encoding.
+						(body as unknown as { toString(encoding: string): string }).toString('utf8')
+					: '';
+
+		if (details) {
+			error.message = `${error.message} — response body: ${details.slice(0, 1000)}`;
+		}
+
+		throw error;
+	}
 }
 
 export function mimeType(filename: string) {
