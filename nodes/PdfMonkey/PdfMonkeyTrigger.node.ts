@@ -6,6 +6,9 @@ import {
 	NodeOperationError,
 	INodeCredentialTestResult,
 	IExecuteFunctions,
+	IHookFunctions,
+	ILoadOptionsFunctions,
+	INodePropertyOptions,
 } from 'n8n-workflow';
 import { IPdfMonkeyWebhookContent } from './interfaces/PdfMonkeyResponse.interface';
 import { downloadFile, mimeType } from './common';
@@ -38,7 +41,144 @@ export class PdfMonkeyTrigger implements INodeType {
 				path: 'pdfmonkey/webhook',
 			},
 		],
-		properties: [],
+		properties: [
+			{
+				displayName: 'Workspace Name or ID',
+				name: 'workspaceId',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getWorkspaces',
+				},
+				default: '',
+				required: true,
+				description:
+					'The workspace to listen for document generation events in. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+			},
+			{
+				displayName: 'Template Names or IDs',
+				name: 'documentTemplateIds',
+				type: 'multiOptions',
+				typeOptions: {
+					loadOptionsMethod: 'getTemplates',
+					loadOptionsDependsOn: ['workspaceId'],
+				},
+				default: [],
+				description:
+					'Apply this trigger only for specific templates. Leave empty to apply to all templates in the workspace. Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+			},
+		],
+	};
+
+	methods = {
+		loadOptions: {
+			async getWorkspaces(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const response = (await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					'pdfMonkeyApi',
+					{
+						method: 'GET',
+						url: 'https://api.pdfmonkey.io/api/v1/workspace_cards',
+						json: true,
+					},
+				)) as { workspace_cards: Array<{ id: string; identifier: string }> };
+
+				return response.workspace_cards.map((workspace) => ({
+					name: workspace.identifier,
+					value: workspace.id,
+				}));
+			},
+
+			async getTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const workspaceId = this.getNodeParameter('workspaceId', '') as string;
+
+				if (!workspaceId) {
+					return [];
+				}
+
+				const response = (await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					'pdfMonkeyApi',
+					{
+						method: 'GET',
+						url: 'https://api.pdfmonkey.io/api/v1/document_template_cards',
+						qs: {
+							page: 'all',
+							'q[workspace_id]': workspaceId,
+						},
+						json: true,
+					},
+				)) as { document_template_cards: Array<{ id: string; identifier: string }> };
+
+				return response.document_template_cards.map((template) => ({
+					name: template.identifier,
+					value: template.id,
+				}));
+			},
+		},
+	};
+
+	webhookMethods = {
+		default: {
+			async checkExists(this: IHookFunctions): Promise<boolean> {
+				const webhookData = this.getWorkflowStaticData('node');
+				return webhookData.webhookId !== undefined;
+			},
+
+			async create(this: IHookFunctions): Promise<boolean> {
+				const webhookUrl = this.getNodeWebhookUrl('default');
+				if (!webhookUrl) {
+					throw new NodeOperationError(this.getNode(), 'Could not resolve the webhook URL');
+				}
+
+				const webhookData = this.getWorkflowStaticData('node');
+				const workspaceId = this.getNodeParameter('workspaceId') as string;
+				const documentTemplateIds = this.getNodeParameter('documentTemplateIds', []) as string[];
+
+				const response = (await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					'pdfMonkeyApi',
+					{
+						method: 'POST',
+						url: 'https://api.pdfmonkey.io/api/v1/rest_hooks',
+						body: {
+							rest_hook: {
+								document_template_ids: documentTemplateIds,
+								event: 'documents.generation.success',
+								platform: 'n8n',
+								url: webhookUrl,
+								workspace_id: workspaceId,
+							},
+						},
+						json: true,
+					},
+				)) as { rest_hook: { id: string } };
+
+				webhookData.webhookId = response.rest_hook.id;
+
+				return true;
+			},
+
+			async delete(this: IHookFunctions): Promise<boolean> {
+				const webhookData = this.getWorkflowStaticData('node');
+
+				if (webhookData.webhookId === undefined) {
+					return true;
+				}
+
+				try {
+					await this.helpers.httpRequestWithAuthentication.call(this, 'pdfMonkeyApi', {
+						method: 'DELETE',
+						url: `https://api.pdfmonkey.io/api/v1/rest_hooks/${webhookData.webhookId}`,
+					});
+				} catch (error) {
+					return false;
+				}
+
+				delete webhookData.webhookId;
+
+				return true;
+			},
+		},
 	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
