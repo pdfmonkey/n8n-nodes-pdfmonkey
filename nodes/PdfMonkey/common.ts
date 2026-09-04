@@ -10,9 +10,11 @@ const MIME_TYPES = {
 
 export async function downloadFile({
 	context,
+	documentId,
 	downloadUrl,
 }: {
 	context: IExecuteFunctions | IWebhookFunctions;
+	documentId: string;
 	downloadUrl: string;
 }) {
 	try {
@@ -37,9 +39,9 @@ export async function downloadFile({
 						(body as unknown as { toString(encoding: string): string }).toString('utf8')
 					: '';
 
-		if (details) {
-			error.message = `${error.message} — response body: ${details.slice(0, 1000)}`;
-		}
+		error.message = `Could not download document ${documentId}: ${error.message}${
+			details ? ` — response body: ${details.slice(0, 1000)}` : ''
+		}`;
 
 		throw error;
 	}

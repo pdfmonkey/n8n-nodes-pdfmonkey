@@ -269,6 +269,7 @@ export class PdfMonkeyTrigger implements INodeType {
 		// Document is successful, download the PDF or image if download_url exists
 		const pdfBuffer = await downloadFile({
 			context: this,
+			documentId: documentCard.id,
 			downloadUrl: documentCard.download_url!,
 		});
 

@@ -371,6 +371,7 @@ export class PdfMonkey implements INodeType {
 					if (documentOrCard.status === 'success') {
 						const pdfBuffer = await downloadFile({
 							context: this,
+							documentId,
 							downloadUrl: documentOrCard.download_url!,
 						});
 						const filename = documentOrCard.filename as string;
@@ -441,6 +442,7 @@ export class PdfMonkey implements INodeType {
 					// Document is successful, download the PDF or image
 					const pdfBuffer = await downloadFile({
 						context: this,
+						documentId: documentCard.id,
 						downloadUrl: documentCard.download_url!,
 					});
 
