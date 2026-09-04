@@ -95,7 +95,7 @@ export class PdfMonkeyTrigger implements INodeType {
 				)) as { workspace_cards: Array<{ id: string; identifier: string }> };
 
 				this.logger.debug(
-					`🗂️ PDFMonkey: Loaded ${response.workspace_cards.length} workspace(s) for the trigger`,
+					`PDFMonkey: Loaded ${response.workspace_cards.length} workspace(s) for the trigger`,
 				);
 
 				return response.workspace_cards.map((workspace) => ({
@@ -108,7 +108,7 @@ export class PdfMonkeyTrigger implements INodeType {
 				const workspaceId = this.getNodeParameter('workspaceId', '') as string;
 
 				if (!workspaceId) {
-					this.logger.debug('📄 PDFMonkey: No workspace selected yet, skipping template loading');
+					this.logger.debug('PDFMonkey: No workspace selected yet, skipping template loading');
 					return [];
 				}
 
@@ -127,7 +127,7 @@ export class PdfMonkeyTrigger implements INodeType {
 				)) as { document_template_cards: Array<{ id: string; identifier: string }> };
 
 				this.logger.debug(
-					`📄 PDFMonkey: Loaded ${response.document_template_cards.length} template(s) for workspace ${workspaceId}`,
+					`PDFMonkey: Loaded ${response.document_template_cards.length} template(s) for workspace ${workspaceId}`,
 				);
 
 				return response.document_template_cards.map((template) => ({
@@ -146,8 +146,8 @@ export class PdfMonkeyTrigger implements INodeType {
 
 				this.logger.debug(
 					exists
-						? `🔗 PDFMonkey: REST hook ${webhookData.webhookId} is already registered`
-						: '🔗 PDFMonkey: No REST hook registered yet',
+						? `PDFMonkey: REST hook ${webhookData.webhookId} is already registered`
+						: 'PDFMonkey: No REST hook registered yet',
 				);
 
 				return exists;
@@ -164,7 +164,7 @@ export class PdfMonkeyTrigger implements INodeType {
 				const documentTemplateIds = this.getNodeParameter('documentTemplateIds', []) as string[];
 
 				this.logger.info(
-					`🔗 PDFMonkey: Registering a REST hook on ${webhookUrl} for workspace ${workspaceId} and ${
+					`PDFMonkey: Registering a REST hook on ${webhookUrl} for workspace ${workspaceId} and ${
 						documentTemplateIds.length > 0
 							? `template(s) ${documentTemplateIds.join(', ')}`
 							: 'all templates'
@@ -193,7 +193,7 @@ export class PdfMonkeyTrigger implements INodeType {
 				webhookData.webhookId = response.rest_hook.id;
 
 				this.logger.info(
-					`🔗 PDFMonkey: REST hook ${response.rest_hook.id} registered with success`,
+					`PDFMonkey: REST hook ${response.rest_hook.id} registered with success`,
 				);
 
 				return true;
@@ -203,11 +203,11 @@ export class PdfMonkeyTrigger implements INodeType {
 				const webhookData = this.getWorkflowStaticData('node');
 
 				if (webhookData.webhookId === undefined) {
-					this.logger.debug('🔗 PDFMonkey: No REST hook to unregister');
+					this.logger.debug('PDFMonkey: No REST hook to unregister');
 					return true;
 				}
 
-				this.logger.info(`🔗 PDFMonkey: Unregistering REST hook ${webhookData.webhookId}`);
+				this.logger.info(`PDFMonkey: Unregistering REST hook ${webhookData.webhookId}`);
 
 				try {
 					await this.helpers.httpRequestWithAuthentication.call(this, 'pdfMonkeyApi', {
@@ -216,7 +216,7 @@ export class PdfMonkeyTrigger implements INodeType {
 					});
 				} catch (error) {
 					this.logger.error(
-						`🔗 PDFMonkey: Failed to unregister REST hook ${webhookData.webhookId}: ${error.message}`,
+						`PDFMonkey: Failed to unregister REST hook ${webhookData.webhookId}: ${error.message}`,
 					);
 					return false;
 				}
@@ -232,18 +232,18 @@ export class PdfMonkeyTrigger implements INodeType {
 		const response = this.getBodyData() as IPdfMonkeyWebhookContent;
 
 		this.logger.debug(
-			`📡 Webhook received for PDFMonkey with data: ${JSON.stringify(response, null, 2)}`,
+			`Webhook received for PDFMonkey with data: ${JSON.stringify(response, null, 2)}`,
 		);
 
 		const documentCard = response.document;
 
 		if (!documentCard?.id) {
-			this.logger.error('📡 PDFMonkey: Webhook payload did not contain a document ID');
+			this.logger.error('PDFMonkey: Webhook payload did not contain a document ID');
 			throw new NodeOperationError(this.getNode(), 'Webhook did not provide a valid document ID');
 		}
 
 		this.logger.info(
-			`📡 PDFMonkey: Document ${documentCard.id} (${documentCard.document_template_identifier}) reported as "${documentCard.status}"`,
+			`PDFMonkey: Document ${documentCard.id} (${documentCard.document_template_identifier}) reported as "${documentCard.status}"`,
 		);
 
 		const responseData = {
@@ -254,7 +254,7 @@ export class PdfMonkeyTrigger implements INodeType {
 		// If document is not successful, just return the response data
 		if (documentCard.status !== 'success') {
 			this.logger.warn(
-				`📡 PDFMonkey: Document ${documentCard.id} was not generated successfully, skipping download${
+				`PDFMonkey: Document ${documentCard.id} was not generated successfully, skipping download${
 					documentCard.failure_cause ? ` (cause: ${documentCard.failure_cause})` : ''
 				}`,
 			);
@@ -272,7 +272,7 @@ export class PdfMonkeyTrigger implements INodeType {
 		}
 
 		// Document is successful, download the PDF or image if download_url exists
-		this.logger.debug(`📄 PDFMonkey: Document ${documentCard.id} is ready for download`);
+		this.logger.debug(`PDFMonkey: Document ${documentCard.id} is ready for download`);
 
 		const pdfBuffer = await downloadFile({
 			context: this,
@@ -282,7 +282,7 @@ export class PdfMonkeyTrigger implements INodeType {
 		const filename = documentCard.filename!;
 
 		this.logger.debug(
-			`📥 PDFMonkey: PDF file from document (${documentCard.id}) downloaded with success! Filename: ${filename}`,
+			`PDFMonkey: PDF file from document (${documentCard.id}) downloaded with success! Filename: ${filename}`,
 		);
 
 		return {

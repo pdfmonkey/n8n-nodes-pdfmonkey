@@ -327,13 +327,13 @@ export class PdfMonkey implements INodeType {
 					})) as IPdfMonkeyDocumentResponse;
 
 					this.logger.debug(
-						`✅ PDFMonkey: Document creation started, documentId: ${response.document.id}`,
+						`PDFMonkey: Document creation started, documentId: ${response.document.id}`,
 					);
 
 					// If waitForCompletion is false, just return the initial response
 					if (!waitForCompletion) {
 						this.logger.debug(
-							`📫 PDFMonkey: Skipping status check and download. Returning document ID: ${response.document.id}`,
+							`PDFMonkey: Skipping status check and download. Returning document ID: ${response.document.id}`,
 						);
 						returnData.push({ json: response, pairedItem });
 						continue;
@@ -343,7 +343,7 @@ export class PdfMonkey implements INodeType {
 					let documentOrCard: IPdfMonkeyDocument | IPdfMonkeyDocumentCard = response.document;
 					const documentId = documentOrCard.id;
 
-					this.logger.debug(`⏳ PDFMonkey: Waiting for document ${documentId} to complete...`);
+					this.logger.debug(`PDFMonkey: Waiting for document ${documentId} to complete...`);
 
 					// Loop until we reach success or failure status
 					while (documentOrCard.status !== 'success' && documentOrCard.status !== 'failure') {
@@ -368,13 +368,13 @@ export class PdfMonkey implements INodeType {
 
 						documentOrCard = response.document_card;
 						this.logger.debug(
-							`📊 PDFMonkey: Document ${documentId} status: ${documentOrCard.status}`,
+							`PDFMonkey: Document ${documentId} status: ${documentOrCard.status}`,
 						);
 					}
 
 					// If we've reached success status, download the PDF or image
 					if (documentOrCard.status === 'success') {
-						this.logger.debug(`📄 PDFMonkey: Document ${documentId} is ready for download`);
+						this.logger.debug(`PDFMonkey: Document ${documentId} is ready for download`);
 
 						const pdfBuffer = await downloadFile({
 							context: this,
@@ -383,7 +383,7 @@ export class PdfMonkey implements INodeType {
 						const filename = documentOrCard.filename as string;
 
 						this.logger.debug(
-							`📥 PDFMonkey: PDF file from document (${documentId}) downloaded with success! Filename: ${filename}`,
+							`PDFMonkey: PDF file from document (${documentId}) downloaded with success! Filename: ${filename}`,
 						);
 
 						returnData.push({
@@ -396,7 +396,7 @@ export class PdfMonkey implements INodeType {
 					} else if (documentOrCard.status === 'failure') {
 						// If generation failed, log the error and return the response
 						this.logger.error(
-							`❌ PDFMonkey: Document generation failed for ${documentId}: ${documentOrCard.failure_cause || 'Unknown error'}`,
+							`PDFMonkey: Document generation failed for ${documentId}: ${documentOrCard.failure_cause || 'Unknown error'}`,
 						);
 						returnData.push({ json: response, pairedItem });
 					}
@@ -415,7 +415,7 @@ export class PdfMonkey implements INodeType {
 
 					const document = response.document;
 					this.logger.debug(
-						`📄 PDFMonkey: Status of Document (${document.id}): ${document.status}`,
+						`PDFMonkey: Status of Document (${document.id}): ${document.status}`,
 					);
 
 					returnData.push({ json: response, pairedItem });
@@ -437,7 +437,7 @@ export class PdfMonkey implements INodeType {
 					// If document is not successful, just return the status
 					if (documentCard.status !== 'success') {
 						this.logger.warn(
-							`⚠️ PDFMonkey: Document ${documentCard.id} is not ready for download. Status: ${documentCard.status}`,
+							`PDFMonkey: Document ${documentCard.id} is not ready for download. Status: ${documentCard.status}`,
 						);
 						returnData.push({
 							json: {
@@ -451,7 +451,7 @@ export class PdfMonkey implements INodeType {
 					}
 
 					// Document is successful, download the PDF or image
-					this.logger.debug(`📄 PDFMonkey: Document ${documentCard.id} is ready for download`);
+					this.logger.debug(`PDFMonkey: Document ${documentCard.id} is ready for download`);
 
 					const pdfBuffer = await downloadFile({
 						context: this,
@@ -461,7 +461,7 @@ export class PdfMonkey implements INodeType {
 					const filename = documentCard.filename as string;
 
 					this.logger.debug(
-						`📥 PDFMonkey: PDF file from document (${documentCard.id}) downloaded with success! Filename: ${filename}`,
+						`PDFMonkey: PDF file from document (${documentCard.id}) downloaded with success! Filename: ${filename}`,
 					);
 
 					returnData.push({
@@ -485,7 +485,7 @@ export class PdfMonkey implements INodeType {
 							url: `https://api.pdfmonkey.io/api/v1/documents/${documentId}`,
 						});
 
-						this.logger.debug(`🗑️ PDFMonkey: Document ${documentId} deleted successfully`);
+						this.logger.debug(`PDFMonkey: Document ${documentId} deleted successfully`);
 
 						returnData.push({
 							json: {
@@ -497,7 +497,7 @@ export class PdfMonkey implements INodeType {
 						});
 					} catch (error) {
 						this.logger.error(
-							`❌ PDFMonkey: Failed to delete document ${documentId}: ${error.message}`,
+							`PDFMonkey: Failed to delete document ${documentId}: ${error.message}`,
 						);
 						throw new NodeOperationError(
 							this.getNode(),
