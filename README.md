@@ -12,6 +12,7 @@ This is an n8n community node. It lets you use PDFMonkey in your n8n workflows.
 [Operations](#operations)
 [Credentials](#credentials)
 [Compatibility](#compatibility)
+[Upgrading](#upgrading)
 [Usage](#usage)
 [Resources](#resources)
 
@@ -94,6 +95,12 @@ To use the PDFMonkey nodes, you need to have a PDFMonkey account and API key.
 ## Compatibility
 
 This node has been tested with n8n version 1.0.0 and later.
+
+## Upgrading
+
+See the [CHANGELOG](./CHANGELOG.md) for what changed in each release.
+
+**Upgrading to 1.0.0 from 0.4.x needs a few manual steps**, including selecting a Workspace on every existing PDFMonkey Trigger before its workflow can be activated again. The [Upgrading from 0.4.x](./CHANGELOG.md#upgrading-from-04x) notes list all of them.
 
 ## Usage
 
@@ -179,3 +186,4 @@ If the field is left empty, the node will use the default generated filename.
 
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 - [PDFMonkey API Documentation](https://docs.pdfmonkey.io/)
+- [Changelog](./CHANGELOG.md)
