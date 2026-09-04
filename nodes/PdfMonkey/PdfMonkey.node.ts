@@ -406,12 +406,17 @@ export class PdfMonkey implements INodeType {
 							},
 							pairedItem,
 						});
-					} else if (documentOrCard.status === 'failure') {
-						// If generation failed, log the error and return the response
-						this.logger.error(
-							`PDFMonkey: Document generation failed for ${documentId}: ${documentOrCard.failure_cause || 'Unknown error'}`,
+					} else {
+						// Emitting a binary-less item here would break downstream nodes with an
+						// error that has nothing to do with the real cause, so fail loudly and
+						// let continueOnFail() decide.
+						throw new NodeOperationError(
+							this.getNode(),
+							`PDFMonkey could not generate document ${documentId}: ${
+								documentOrCard.failure_cause || 'Unknown error'
+							}`,
+							{ itemIndex: i },
 						);
-						returnData.push({ json: response, pairedItem });
 					}
 				} else if (operation === 'getDocument') {
 					const documentId = this.getNodeParameter('documentId', i) as string;

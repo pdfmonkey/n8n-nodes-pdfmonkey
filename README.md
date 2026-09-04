@@ -30,6 +30,7 @@ The PDFMonkey node provides the following operations:
   - Optional auto-polling for document completion (controlled by "Wait For Completion" option)
   - Polls every 2 seconds while waiting, and gives up after 5 minutes
   - Downloads the PDF automatically if generation is successful and auto-polling is enabled
+  - Fails the item if PDFMonkey reports a generation failure, reporting the `failure_cause`
 - **Get Document**: Get document details and check its generation status
 - **Download File**: Download a generated PDF or image document and save it as a binary file
 - **Delete Document**: Delete a previously generated PDF document from PDFMonkey
@@ -154,6 +155,8 @@ The Generate Document operation includes a "Wait For Completion" option that con
 
    - The node checks the document status every 2 seconds until it reaches a final state (success or failure)
    - If successful, it automatically downloads the PDF or image and returns it as a binary file
+   - If PDFMonkey reports a failure, the item fails with the `failure_cause` it returned. Enable
+     n8n's "Continue On Fail" on the node if you would rather keep the workflow running
    - If the document is still generating after 5 minutes, the node stops waiting and fails the item.
      The document keeps generating on PDFMonkey's side, so you can still fetch it later with
      Get Document or Download File
