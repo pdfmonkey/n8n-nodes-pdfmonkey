@@ -28,7 +28,7 @@ The PDFMonkey node provides the following operations:
 - **Generate Document**: Create a new PDF document using a template and dynamic data
   - Supports custom metadata and filename customization
   - Optional auto-polling for document completion (controlled by "Wait For Completion" option)
-  - Uses a simple 2-second interval between status checks when polling
+  - Polls every 2 seconds while waiting, and gives up after 5 minutes
   - Downloads the PDF automatically if generation is successful and auto-polling is enabled
 - **Get Document**: Get document details and check its generation status
 - **Download File**: Download a generated PDF or image document and save it as a binary file
@@ -154,7 +154,9 @@ The Generate Document operation includes a "Wait For Completion" option that con
 
    - The node checks the document status every 2 seconds until it reaches a final state (success or failure)
    - If successful, it automatically downloads the PDF or image and returns it as a binary file
-   - Simple, straightforward polling mechanism with minimal overhead
+   - If the document is still generating after 5 minutes, the node stops waiting and fails the item.
+     The document keeps generating on PDFMonkey's side, so you can still fetch it later with
+     Get Document or Download File
    - Progress is logged with status updates during polling
 
 2. When **disabled**:
@@ -162,7 +164,7 @@ The Generate Document operation includes a "Wait For Completion" option that con
    - The response includes the document ID and initial pending status
    - You can later use the Get Document or Download File operations to check status and retrieve the document
 
-This feature is especially useful for smaller documents that generate quickly, providing a simpler workflow without needing separate Get Document and Download File steps. For larger documents that take longer to generate, you may want to disable this option and use a separate Get Document or Download File operation later.
+This feature is especially useful for smaller documents that generate quickly, providing a simpler workflow without needing separate Get Document and Download File steps. For larger documents that take longer to generate, in particular anything that might run past the 5-minute wait, disable this option and use a separate Get Document or Download File operation later, or trigger the follow-up work from the PDFMonkey Trigger node instead.
 
 ### Custom Filenames
 
