@@ -39,8 +39,8 @@ The PDFMonkey node provides the following operations:
 
 The PDFMonkey Trigger node listens for webhooks from PDFMonkey and processes them:
 
-- **Webhook Receiver**: Triggers when PDFMonkey sends a webhook notification
-- **Automatic File Download**: Automatically downloads the PDF or image when the document generation is successful
+- **Webhook Receiver**: Triggers when PDFMonkey finishes generating a document, whether it succeeded or failed. Check the `status` field to tell them apart
+- **Automatic File Download**: Automatically downloads the PDF or image when the document generation is successful; failed documents come through with their `failure_cause` and no binary data
 - **Intelligent Filename Handling**: Extracts the filename from metadata
 - **Complete Response Data**: Returns all document properties from the PDFMonkey API in the JSON output
 

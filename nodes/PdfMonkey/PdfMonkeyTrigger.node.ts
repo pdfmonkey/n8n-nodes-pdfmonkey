@@ -21,7 +21,7 @@ export class PdfMonkeyTrigger implements INodeType {
 		group: ['trigger'],
 		version: 1,
 		description:
-			'Triggers when PdfMonkey sends a webhook and downloads the PDF or image if successful',
+			'Triggers when PDFMonkey finishes generating a document, successfully or not, and downloads the PDF or image on success',
 		eventTriggerDescription: 'Waiting for a document to be generated in PDFMonkey',
 		defaults: {
 			name: 'PDFMonkey Trigger',
@@ -30,12 +30,12 @@ export class PdfMonkeyTrigger implements INodeType {
 			header: '',
 			executionsHelp: {
 				inactive:
-					'This trigger fires whenever PDFMonkey finishes generating a document. To get sample data while building, click <b>Listen for test event</b>, then generate a document from one of the selected templates in PDFMonkey — the payload will show up here. Once you activate the workflow, it will run automatically on every successful generation.',
+					'This trigger fires whenever PDFMonkey finishes generating a document, whether it succeeded or failed. To get sample data while building, click <b>Listen for test event</b>, then generate a document from one of the selected templates in PDFMonkey — the payload will show up here. Once you activate the workflow, it will run automatically on every generation.',
 				active:
-					'This trigger fires whenever PDFMonkey finishes generating a document. Since the workflow is active, it runs automatically on every successful generation. To test it while building, click <b>Listen for test event</b> and generate a document in PDFMonkey.',
+					'This trigger fires whenever PDFMonkey finishes generating a document, whether it succeeded or failed. Since the workflow is active, it runs automatically on every generation. To test it while building, click <b>Listen for test event</b> and generate a document in PDFMonkey.',
 			},
 			activationHint:
-				'Once you activate this workflow, it will run on every document successfully generated from the selected template(s).',
+				'Once you activate this workflow, it will run on every document generated from the selected template(s), successful or failed. Check the "status" field to tell them apart.',
 		},
 		credentials: [
 			{
@@ -180,7 +180,7 @@ export class PdfMonkeyTrigger implements INodeType {
 						body: {
 							rest_hook: {
 								document_template_ids: documentTemplateIds,
-								event: 'documents.generation.success',
+								event: 'documents.generation.success,documents.generation.failure',
 								platform: 'n8n',
 								url: webhookUrl,
 								workspace_id: workspaceId,
