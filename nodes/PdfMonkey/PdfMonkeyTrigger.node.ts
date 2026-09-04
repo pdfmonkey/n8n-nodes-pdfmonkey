@@ -231,14 +231,9 @@ export class PdfMonkeyTrigger implements INodeType {
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const response = this.getBodyData() as IPdfMonkeyWebhookContent;
 
-		this.logger.debug(
-			`Webhook received for PDFMonkey with data: ${JSON.stringify(response, null, 2)}`,
-		);
-
 		const documentCard = response.document;
 
 		if (!documentCard?.id) {
-			this.logger.error('PDFMonkey: Webhook payload did not contain a document ID');
 			throw new NodeOperationError(this.getNode(), 'Webhook did not provide a valid document ID');
 		}
 
@@ -272,8 +267,6 @@ export class PdfMonkeyTrigger implements INodeType {
 		}
 
 		// Document is successful, download the PDF or image if download_url exists
-		this.logger.debug(`PDFMonkey: Document ${documentCard.id} is ready for download`);
-
 		const pdfBuffer = await downloadFile({
 			context: this,
 			downloadUrl: documentCard.download_url!,

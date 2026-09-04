@@ -332,9 +332,6 @@ export class PdfMonkey implements INodeType {
 
 					// If waitForCompletion is false, just return the initial response
 					if (!waitForCompletion) {
-						this.logger.debug(
-							`PDFMonkey: Skipping status check and download. Returning document ID: ${response.document.id}`,
-						);
 						returnData.push({ json: response, pairedItem });
 						continue;
 					}
@@ -342,8 +339,6 @@ export class PdfMonkey implements INodeType {
 					// Simple polling approach - keep checking status until success or failed
 					let documentOrCard: IPdfMonkeyDocument | IPdfMonkeyDocumentCard = response.document;
 					const documentId = documentOrCard.id;
-
-					this.logger.debug(`PDFMonkey: Waiting for document ${documentId} to complete...`);
 
 					// Loop until we reach success or failure status
 					while (documentOrCard.status !== 'success' && documentOrCard.status !== 'failure') {
@@ -374,8 +369,6 @@ export class PdfMonkey implements INodeType {
 
 					// If we've reached success status, download the PDF or image
 					if (documentOrCard.status === 'success') {
-						this.logger.debug(`PDFMonkey: Document ${documentId} is ready for download`);
-
 						const pdfBuffer = await downloadFile({
 							context: this,
 							downloadUrl: documentOrCard.download_url!,
@@ -413,11 +406,6 @@ export class PdfMonkey implements INodeType {
 						},
 					)) as IPdfMonkeyDocumentResponse;
 
-					const document = response.document;
-					this.logger.debug(
-						`PDFMonkey: Status of Document (${document.id}): ${document.status}`,
-					);
-
 					returnData.push({ json: response, pairedItem });
 				} else if (operation === 'downloadFile') {
 					const documentId = this.getNodeParameter('documentId', i) as string;
@@ -451,8 +439,6 @@ export class PdfMonkey implements INodeType {
 					}
 
 					// Document is successful, download the PDF or image
-					this.logger.debug(`PDFMonkey: Document ${documentCard.id} is ready for download`);
-
 					const pdfBuffer = await downloadFile({
 						context: this,
 						downloadUrl: documentCard.download_url!,
@@ -485,8 +471,6 @@ export class PdfMonkey implements INodeType {
 							url: `https://api.pdfmonkey.io/api/v1/documents/${documentId}`,
 						});
 
-						this.logger.debug(`PDFMonkey: Document ${documentId} deleted successfully`);
-
 						returnData.push({
 							json: {
 								success: true,
@@ -496,9 +480,6 @@ export class PdfMonkey implements INodeType {
 							pairedItem,
 						});
 					} catch (error) {
-						this.logger.error(
-							`PDFMonkey: Failed to delete document ${documentId}: ${error.message}`,
-						);
 						throw new NodeOperationError(
 							this.getNode(),
 							`Failed to delete document: ${error.message}`,
