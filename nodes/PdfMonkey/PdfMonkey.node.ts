@@ -6,6 +6,7 @@ import {
 	NodeOperationError,
 	INodeCredentialTestResult,
 	IPairedItemData,
+	sleep,
 } from 'n8n-workflow';
 import {
 	IPdfMonkeyDocument,
@@ -16,6 +17,12 @@ import {
 	IPdfMonkeyDocumentResponse,
 } from './interfaces/PdfMonkeyResponse.interface';
 import { downloadFile, mimeType } from './common';
+
+// How long to wait between status checks, and how long to keep waiting overall, when
+// "Wait For Completion" is on. Fixed for now; worth exposing as node options if users
+// start generating documents that outlive the timeout.
+const POLL_INTERVAL_MS = 2000;
+const POLL_TIMEOUT_MS = 5 * 60 * 1000;
 
 export class PdfMonkey implements INodeType {
 	description: INodeTypeDescription = {
@@ -327,63 +334,69 @@ export class PdfMonkey implements INodeType {
 					})) as IPdfMonkeyDocumentResponse;
 
 					this.logger.debug(
-						`✅ PDFMonkey: Document creation started, documentId: ${response.document.id}`,
+						`PDFMonkey: Document creation started, documentId: ${response.document.id}`,
 					);
 
 					// If waitForCompletion is false, just return the initial response
 					if (!waitForCompletion) {
-						this.logger.debug(
-							`📫 PDFMonkey: Skipping status check and download. Returning document ID: ${response.document.id}`,
-						);
 						returnData.push({ json: response, pairedItem });
 						continue;
 					}
 
-					// Simple polling approach - keep checking status until success or failed
 					let documentOrCard: IPdfMonkeyDocument | IPdfMonkeyDocumentCard = response.document;
 					const documentId = documentOrCard.id;
 
-					this.logger.debug(`⏳ PDFMonkey: Waiting for document ${documentId} to complete...`);
+					// Poll until we reach a terminal status, or we give up waiting
+					const deadline = Date.now() + POLL_TIMEOUT_MS;
 
-					// Loop until we reach success or failure status
 					while (documentOrCard.status !== 'success' && documentOrCard.status !== 'failure') {
-						// Wait 2 seconds before next check
-						const waitUntil = Date.now() + 2000;
-						while (Date.now() < waitUntil) {
-							// Yield to event loop every 200ms to avoid blocking
-							if (Date.now() % 200 < 10) {
-								await new Promise<void>((resolve) => resolve());
-							}
+						if (Date.now() >= deadline) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Document ${documentId} was still "${documentOrCard.status}" after ${
+									POLL_TIMEOUT_MS / 1000
+								}s, giving up waiting for it`,
+								{ itemIndex: i },
+							);
 						}
 
-						response = (await this.helpers.httpRequestWithAuthentication
-							.call(this, 'pdfMonkeyApi', {
-								method: 'GET',
-								url: `https://api.pdfmonkey.io/api/v1/document_cards/${documentId}`,
-								json: true,
-							})
-							.catch(() => {
-								/* ignore errors during wait */
-							})) as IPdfMonkeyDocumentCardResponse;
+						await sleep(POLL_INTERVAL_MS);
 
-						documentOrCard = response.document_card;
-						this.logger.debug(
-							`📊 PDFMonkey: Document ${documentId} status: ${documentOrCard.status}`,
-						);
+						try {
+							response = (await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'pdfMonkeyApi',
+								{
+									method: 'GET',
+									url: `https://api.pdfmonkey.io/api/v1/document_cards/${documentId}`,
+									json: true,
+								},
+							)) as IPdfMonkeyDocumentCardResponse;
+
+							documentOrCard = response.document_card;
+							this.logger.debug(
+								`PDFMonkey: Document ${documentId} status: ${documentOrCard.status}`,
+							);
+						} catch (error) {
+							// A single failed status check shouldn't kill the run; the deadline
+							// above bounds how long we keep retrying.
+							this.logger.debug(
+								`PDFMonkey: Status check for document ${documentId} failed, retrying: ${error.message}`,
+							);
+						}
 					}
 
 					// If we've reached success status, download the PDF or image
 					if (documentOrCard.status === 'success') {
-						this.logger.debug(`📄 PDFMonkey: Document ${documentId} is ready for download`);
-
 						const pdfBuffer = await downloadFile({
 							context: this,
+							documentId,
 							downloadUrl: documentOrCard.download_url!,
 						});
 						const filename = documentOrCard.filename as string;
 
 						this.logger.debug(
-							`📥 PDFMonkey: PDF file from document (${documentId}) downloaded with success! Filename: ${filename}`,
+							`PDFMonkey: PDF file from document (${documentId}) downloaded with success! Filename: ${filename}`,
 						);
 
 						returnData.push({
@@ -393,12 +406,17 @@ export class PdfMonkey implements INodeType {
 							},
 							pairedItem,
 						});
-					} else if (documentOrCard.status === 'failure') {
-						// If generation failed, log the error and return the response
-						this.logger.error(
-							`❌ PDFMonkey: Document generation failed for ${documentId}: ${documentOrCard.failure_cause || 'Unknown error'}`,
+					} else {
+						// Emitting a binary-less item here would break downstream nodes with an
+						// error that has nothing to do with the real cause, so fail loudly and
+						// let continueOnFail() decide.
+						throw new NodeOperationError(
+							this.getNode(),
+							`PDFMonkey could not generate document ${documentId}: ${
+								documentOrCard.failure_cause || 'Unknown error'
+							}`,
+							{ itemIndex: i },
 						);
-						returnData.push({ json: response, pairedItem });
 					}
 				} else if (operation === 'getDocument') {
 					const documentId = this.getNodeParameter('documentId', i) as string;
@@ -412,11 +430,6 @@ export class PdfMonkey implements INodeType {
 							json: true,
 						},
 					)) as IPdfMonkeyDocumentResponse;
-
-					const document = response.document;
-					this.logger.debug(
-						`📄 PDFMonkey: Status of Document (${document.id}): ${document.status}`,
-					);
 
 					returnData.push({ json: response, pairedItem });
 				} else if (operation === 'downloadFile') {
@@ -437,7 +450,7 @@ export class PdfMonkey implements INodeType {
 					// If document is not successful, just return the status
 					if (documentCard.status !== 'success') {
 						this.logger.warn(
-							`⚠️ PDFMonkey: Document ${documentCard.id} is not ready for download. Status: ${documentCard.status}`,
+							`PDFMonkey: Document ${documentCard.id} is not ready for download. Status: ${documentCard.status}`,
 						);
 						returnData.push({
 							json: {
@@ -451,17 +464,16 @@ export class PdfMonkey implements INodeType {
 					}
 
 					// Document is successful, download the PDF or image
-					this.logger.debug(`📄 PDFMonkey: Document ${documentCard.id} is ready for download`);
-
 					const pdfBuffer = await downloadFile({
 						context: this,
+						documentId: documentCard.id,
 						downloadUrl: documentCard.download_url!,
 					});
 
 					const filename = documentCard.filename as string;
 
 					this.logger.debug(
-						`📥 PDFMonkey: PDF file from document (${documentCard.id}) downloaded with success! Filename: ${filename}`,
+						`PDFMonkey: PDF file from document (${documentCard.id}) downloaded with success! Filename: ${filename}`,
 					);
 
 					returnData.push({
@@ -485,8 +497,6 @@ export class PdfMonkey implements INodeType {
 							url: `https://api.pdfmonkey.io/api/v1/documents/${documentId}`,
 						});
 
-						this.logger.debug(`🗑️ PDFMonkey: Document ${documentId} deleted successfully`);
-
 						returnData.push({
 							json: {
 								success: true,
@@ -496,9 +506,6 @@ export class PdfMonkey implements INodeType {
 							pairedItem,
 						});
 					} catch (error) {
-						this.logger.error(
-							`❌ PDFMonkey: Failed to delete document ${documentId}: ${error.message}`,
-						);
 						throw new NodeOperationError(
 							this.getNode(),
 							`Failed to delete document: ${error.message}`,

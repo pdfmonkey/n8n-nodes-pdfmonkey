@@ -28,8 +28,9 @@ The PDFMonkey node provides the following operations:
 - **Generate Document**: Create a new PDF document using a template and dynamic data
   - Supports custom metadata and filename customization
   - Optional auto-polling for document completion (controlled by "Wait For Completion" option)
-  - Uses a simple 2-second interval between status checks when polling
+  - Polls every 2 seconds while waiting, and gives up after 5 minutes
   - Downloads the PDF automatically if generation is successful and auto-polling is enabled
+  - Fails the item if PDFMonkey reports a generation failure, reporting the `failure_cause`
 - **Get Document**: Get document details and check its generation status
 - **Download File**: Download a generated PDF or image document and save it as a binary file
 - **Delete Document**: Delete a previously generated PDF document from PDFMonkey
@@ -38,10 +39,48 @@ The PDFMonkey node provides the following operations:
 
 The PDFMonkey Trigger node listens for webhooks from PDFMonkey and processes them:
 
-- **Webhook Receiver**: Triggers when PDFMonkey sends a webhook notification
-- **Automatic File Download**: Automatically downloads the PDF or image when the document generation is successful
+- **Webhook Receiver**: Triggers when PDFMonkey finishes generating a document, whether it succeeded or failed. Check the `status` field to tell them apart
+- **Automatic File Download**: Automatically downloads the PDF or image when the document generation is successful; failed documents come through with their `failure_cause` and no binary data
 - **Intelligent Filename Handling**: Extracts the filename from metadata
 - **Complete Response Data**: Returns all document properties from the PDFMonkey API in the JSON output
+
+#### Testing the Trigger
+
+Select a workspace (and optionally one or more templates), then click **Listen for test event**. n8n
+registers a temporary REST hook with PDFMonkey; generate a document from one of the selected templates
+and the payload will appear in the output panel.
+
+To build the rest of your workflow without generating a document, click **set mock data** in the output
+panel and paste the payload below. It matches what PDFMonkey actually sends
+([webhook documentation](https://pdfmonkey.io/docs/generating-documents/webhooks/)):
+
+```json
+[
+  {
+    "id": "a5e86d72-f5b7-43d4-a04e-8b7e08e6741c",
+    "app_id": "d6b4e8f2-7a3c-4d1e-9f5b-2c8a1d3e6f90",
+    "created_at": "2050-03-13T12:34:56.181+02:00",
+    "document_template_id": "2903f5b4-623b-4e10-b2e3-dc7e2e67ea39",
+    "document_template_identifier": "My Invoice Template",
+    "download_url": "https://pdfmonkey.s3.eu-west-1.amazonaws.com/...",
+    "failure_cause": null,
+    "filename": "2050-03-14 Peter Parker.pdf",
+    "meta": {
+      "_filename": "2050-03-14 Peter Parker.pdf",
+      "clientRef": "spidey-616"
+    },
+    "output_type": "pdf",
+    "preview_url": "https://preview.pdfmonkey.io/pdf/web/viewer.html?file=...",
+    "public_share_link": null,
+    "status": "success",
+    "updated_at": "2050-03-13T12:34:59.412+02:00"
+  }
+]
+```
+
+The webhook carries a DocumentCard, so `payload`, `generation_logs` and `checksum` are not included.
+`download_url` is a signed link valid for one hour. On a real successful event the node also attaches the
+downloaded file as binary data, which mock data cannot reproduce.
 
 ## Credentials
 
@@ -116,7 +155,11 @@ The Generate Document operation includes a "Wait For Completion" option that con
 
    - The node checks the document status every 2 seconds until it reaches a final state (success or failure)
    - If successful, it automatically downloads the PDF or image and returns it as a binary file
-   - Simple, straightforward polling mechanism with minimal overhead
+   - If PDFMonkey reports a failure, the item fails with the `failure_cause` it returned. Enable
+     n8n's "Continue On Fail" on the node if you would rather keep the workflow running
+   - If the document is still generating after 5 minutes, the node stops waiting and fails the item.
+     The document keeps generating on PDFMonkey's side, so you can still fetch it later with
+     Get Document or Download File
    - Progress is logged with status updates during polling
 
 2. When **disabled**:
@@ -124,7 +167,7 @@ The Generate Document operation includes a "Wait For Completion" option that con
    - The response includes the document ID and initial pending status
    - You can later use the Get Document or Download File operations to check status and retrieve the document
 
-This feature is especially useful for smaller documents that generate quickly, providing a simpler workflow without needing separate Get Document and Download File steps. For larger documents that take longer to generate, you may want to disable this option and use a separate Get Document or Download File operation later.
+This feature is especially useful for smaller documents that generate quickly, providing a simpler workflow without needing separate Get Document and Download File steps. For larger documents that take longer to generate, in particular anything that might run past the 5-minute wait, disable this option and use a separate Get Document or Download File operation later, or trigger the follow-up work from the PDFMonkey Trigger node instead.
 
 ### Custom Filenames
 
