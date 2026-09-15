@@ -64,7 +64,7 @@ export class PdfMonkeyTrigger implements INodeType {
 				default: '',
 				required: true,
 				description:
-					'The workspace to listen for document generation events in. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+					'The workspace to listen for document generation events in. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
 				displayName: 'Template Names or IDs',
@@ -76,7 +76,7 @@ export class PdfMonkeyTrigger implements INodeType {
 				},
 				default: [],
 				description:
-					'Apply this trigger only for specific templates. Leave empty to apply to all templates in the workspace. Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+					'Apply this trigger only for specific templates. Leave empty to apply to all templates in the workspace. Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 		],
 	};
