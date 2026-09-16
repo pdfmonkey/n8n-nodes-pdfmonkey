@@ -192,9 +192,7 @@ export class PdfMonkeyTrigger implements INodeType {
 
 				webhookData.webhookId = response.rest_hook.id;
 
-				this.logger.info(
-					`PDFMonkey: REST hook ${response.rest_hook.id} registered with success`,
-				);
+				this.logger.info(`PDFMonkey: REST hook ${response.rest_hook.id} registered with success`);
 
 				return true;
 			},

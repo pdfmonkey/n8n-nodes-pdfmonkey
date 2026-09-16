@@ -16,10 +16,10 @@
     "url": "https://github.com/pdfmonkey/n8n-nodes-pdfmonkey"
   },
   "engines": {
-    "node": ">=18.10",
-    "pnpm": ">=9.1"
+    "node": ">=24",
+    "pnpm": ">=10"
   },
-  "packageManager": "pnpm@9.1.4",
+  "packageManager": "pnpm@10.30.3",
   "main": "index.js",
   "scripts": {
     "build": "tsc && gulp build:icons",
@@ -27,7 +27,7 @@
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
-    "prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json"
+    "prepublishOnly": "pnpm build && pnpm lint -c eslint.config.prepublish.js nodes credentials package.json"
   },
   "files": [
     "dist"
@@ -49,12 +49,13 @@
     "icon": "file:PDFMonkey.svg"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^7.15.0",
-    "eslint": "^8.56.0",
-    "eslint-plugin-n8n-nodes-base": "^1.16.1",
-    "gulp": "^4.0.2",
-    "prettier": "^3.3.2",
-    "typescript": "^5.5.3"
+    "@typescript-eslint/parser": "^8.70.0",
+    "eslint": "^10.10.0",
+    "eslint-plugin-n8n-nodes-base": "^2.0.0",
+    "gulp": "^5.0.1",
+    "n8n-workflow": "^2.16.0",
+    "prettier": "^3.9.6",
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
