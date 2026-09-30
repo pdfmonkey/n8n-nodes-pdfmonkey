@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.0.1 (2026-09-30)
+
+- (Chore) Publishing to npm from GitHub Actions with a provenance statement, as n8n requires for verified community nodes
+
 ## 1.0.0 (2026-09-04)
 
 - (Breaking) Registering and removing the PDFMonkey REST hook automatically in the Trigger node: pick a workspace and, optionally, specific templates on the node instead of wiring the webhook by hand in PDFMonkey. Existing triggers will not activate until a Workspace is selected, and the hook you registered by hand has to be deleted or every document is delivered twice

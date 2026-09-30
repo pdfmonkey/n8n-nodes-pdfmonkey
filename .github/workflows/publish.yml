@@ -1,0 +1,39 @@
+# Publishes the package to npm with a provenance statement, which n8n requires
+# for verified community nodes. Authenticates through npm Trusted Publishing
+# (OIDC), so no npm token is stored in the repository.
+#
+# Release: bump the version in package.json, commit, then push a matching tag
+# (e.g. `git tag v1.0.1 && git push origin v1.0.1`).
+
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC for Trusted Publishing and the provenance signature
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Check the tag matches package.json
+        run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+
+      - run: pnpm install --frozen-lockfile
+
+      # prepublishOnly builds and lints
+      - run: npm publish --provenance --access public
