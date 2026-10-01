@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-pdfmonkey",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "PDFMonkey nodes for n8n",
   "keywords": [
     "n8n-community-node-package"
@@ -41,7 +41,7 @@
       "dist/nodes/PdfMonkey/PdfMonkey.node.js",
       "dist/nodes/PdfMonkey/PdfMonkeyTrigger.node.js"
     ],
-    "versionId": "1.0.1",
+    "versionId": "1.0.2",
     "categories": [
       "Development",
       "Files"

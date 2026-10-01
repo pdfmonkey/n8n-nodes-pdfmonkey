@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## 1.0.2 (2026-10-01)
 
 - (Improvement) Making the PDFMonkey node available as a tool for AI Agents
 - (Improvement) Showing the selected operation under the PDFMonkey node, and the PDFMonkey icon on the credential
