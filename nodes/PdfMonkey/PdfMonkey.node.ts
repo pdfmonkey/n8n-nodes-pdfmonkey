@@ -30,7 +30,7 @@ export class PdfMonkey implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PDFMonkey',
 		name: 'pdfMonkey',
-		icon: 'file:PDFMonkey.svg',
+		icon: { light: 'file:PDFMonkey.svg', dark: 'file:PDFMonkey.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"]}}',

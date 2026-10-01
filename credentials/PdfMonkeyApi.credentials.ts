@@ -10,7 +10,10 @@ export class PdfMonkeyApi implements ICredentialType {
 	name = 'pdfMonkeyApi';
 	displayName = 'PDFMonkey API';
 	documentationUrl = 'https://www.pdfmonkey.io/docs/api/';
-	icon = 'file:../nodes/PdfMonkey/PDFMonkey.svg' as const;
+	icon = {
+		light: 'file:../nodes/PdfMonkey/PDFMonkey.svg',
+		dark: 'file:../nodes/PdfMonkey/PDFMonkey.svg',
+	} as const;
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',

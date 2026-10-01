@@ -18,7 +18,7 @@ export class PdfMonkeyTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PDFMonkey Trigger',
 		name: 'pdfMonkeyTrigger',
-		icon: 'file:PDFMonkey.svg',
+		icon: { light: 'file:PDFMonkey.svg', dark: 'file:PDFMonkey.svg' },
 		group: ['trigger'],
 		version: 1,
 		subtitle: 'On document generated',
