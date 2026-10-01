@@ -3,6 +3,7 @@ import {
 	IWebhookResponseData,
 	INodeType,
 	INodeTypeDescription,
+	NodeConnectionTypes,
 	NodeOperationError,
 	INodeCredentialTestResult,
 	IExecuteFunctions,
@@ -20,6 +21,7 @@ export class PdfMonkeyTrigger implements INodeType {
 		icon: 'file:PDFMonkey.svg',
 		group: ['trigger'],
 		version: 1,
+		subtitle: 'On document generated',
 		description:
 			'Triggers when PDFMonkey finishes generating a document, successfully or not, and downloads the PDF or image on success',
 		eventTriggerDescription: 'Waiting for a document to be generated in PDFMonkey',
@@ -44,7 +46,7 @@ export class PdfMonkeyTrigger implements INodeType {
 			},
 		],
 		inputs: [],
-		outputs: ['main'],
+		outputs: [NodeConnectionTypes.Main],
 		webhooks: [
 			{
 				name: 'default',

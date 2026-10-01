@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@n8n/eslint-plugin-community-nodes':
+        specifier: ^0.35.0
+        version: 0.35.0(eslint@10.11.0)(n8n-workflow@2.28.0)(typescript@5.9.3)
       '@typescript-eslint/parser':
         specifier: ^8.70.0
         version: 8.70.0(eslint@10.11.0)(typescript@5.9.3)
@@ -107,6 +110,12 @@ packages:
 
   '@n8n/errors@0.10.0':
     resolution: {integrity: sha512-Qle4gCsx7qtDRMdie3YkjuXPuo369PP32cR9Svb+INwcjLMxNzmnbJ66jFnOmLn0ntwBccUw1IecJ6axwyTgBQ==}
+
+  '@n8n/eslint-plugin-community-nodes@0.35.0':
+    resolution: {integrity: sha512-AJ0ss/StzzFwaCSs15JbG3wGVHJLc9yExhh27g0cS+2jg1lFw60zCyG+N7SDqZv+uJtIfjUtNrSOQtIFNd657w==}
+    peerDependencies:
+      eslint: 9.29.0
+      n8n-workflow: '>=2'
 
   '@n8n/expression-runtime@0.19.0':
     resolution: {integrity: sha512-ShRp3TEue2dNaP/PIQzD5DqyYUjkiaIsDVwsyfAvhsdyIUKyishsHsnogv527vjuA/WzH5cYn9X75lFeQA8hZg==}
@@ -1350,6 +1359,17 @@ snapshots:
   '@n8n/errors@0.10.0':
     dependencies:
       callsites: 3.1.0
+
+  '@n8n/eslint-plugin-community-nodes@0.35.0(eslint@10.11.0)(n8n-workflow@2.28.0)(typescript@5.9.3)':
+    dependencies:
+      '@typescript-eslint/typescript-estree': 8.70.0(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.70.0(eslint@10.11.0)(typescript@5.9.3)
+      eslint: 10.11.0
+      fastest-levenshtein: 1.0.16
+      n8n-workflow: 2.28.0
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
 
   '@n8n/expression-runtime@0.19.0':
     dependencies:

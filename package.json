@@ -49,6 +49,7 @@
     "icon": "file:PDFMonkey.svg"
   },
   "devDependencies": {
+    "@n8n/eslint-plugin-community-nodes": "^0.35.0",
     "@typescript-eslint/parser": "^8.70.0",
     "eslint": "^10.10.0",
     "eslint-plugin-n8n-nodes-base": "^2.0.0",
