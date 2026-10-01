@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.0.2 (2026-10-01)
+
+- (Improvement) Making the PDFMonkey node available as a tool for AI Agents
+- (Improvement) Showing the selected operation under the PDFMonkey node, and the PDFMonkey icon on the credential
+- (Improvement) Reporting download and other unexpected failures as n8n node errors, so the execution view shows the HTTP status and failing item
+- (Chore) Linting with n8n’s community nodes rules, the ones used to verify community packages
+
 ## 1.0.1 (2026-09-30)
 
 - (Chore) Publishing to npm from GitHub Actions with a provenance statement, as n8n requires for verified community nodes

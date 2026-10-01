@@ -1,5 +1,6 @@
 const tsParser = require('@typescript-eslint/parser');
 const n8nNodesBase = require('eslint-plugin-n8n-nodes-base');
+const n8nCommunityNodes = require('@n8n/eslint-plugin-community-nodes');
 
 const languageOptions = {
 	parser: tsParser,
@@ -13,6 +14,7 @@ const languageOptions = {
 
 module.exports = [
 	{ ignores: ['**/dist/**'] },
+	n8nCommunityNodes.configs.recommended,
 	{
 		files: ['package.json'],
 		languageOptions,
@@ -41,6 +43,9 @@ module.exports = [
 			'n8n-nodes-base/node-execute-block-missing-continue-on-fail': 'off',
 			'n8n-nodes-base/node-resource-description-filename-against-convention': 'off',
 			'n8n-nodes-base/node-param-fixed-collection-type-unsorted-items': 'off',
+			// Superseded by @n8n/community-nodes/node-connection-type-literal, which wants NodeConnectionTypes.Main
+			'n8n-nodes-base/node-class-description-inputs-wrong-regular-node': 'off',
+			'n8n-nodes-base/node-class-description-outputs-wrong': 'off',
 		},
 	},
 ];

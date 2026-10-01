@@ -1,4 +1,4 @@
-import { IExecuteFunctions, IWebhookFunctions } from 'n8n-workflow';
+import { IExecuteFunctions, IWebhookFunctions, JsonObject, NodeApiError } from 'n8n-workflow';
 
 const MIME_TYPES = {
 	pdf: 'application/pdf',
@@ -39,11 +39,11 @@ export async function downloadFile({
 						(body as unknown as { toString(encoding: string): string }).toString('utf8')
 					: '';
 
-		error.message = `Could not download document ${documentId}: ${error.message}${
-			details ? ` — response body: ${details.slice(0, 1000)}` : ''
-		}`;
-
-		throw error;
+		throw new NodeApiError(context.getNode(), error as JsonObject, {
+			message: `Could not download document ${documentId}: ${error.message}${
+				details ? ` — response body: ${details.slice(0, 1000)}` : ''
+			}`,
+		});
 	}
 }
 

@@ -3,6 +3,8 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeApiError,
+	NodeConnectionTypes,
 	NodeOperationError,
 	INodeCredentialTestResult,
 	IPairedItemData,
@@ -28,21 +30,23 @@ export class PdfMonkey implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'PDFMonkey',
 		name: 'pdfMonkey',
-		icon: 'file:PDFMonkey.svg',
+		icon: { light: 'file:PDFMonkey.svg', dark: 'file:PDFMonkey.svg' },
 		group: ['transform'],
 		version: 1,
+		subtitle: '={{$parameter["operation"]}}',
 		description: 'Generate PDFs using PDFMonkey API',
 		defaults: {
 			name: 'PDFMonkey',
 		},
+		usableAsTool: true,
 		credentials: [
 			{
 				name: 'pdfMonkeyApi',
 				required: true,
 			},
 		],
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		properties: [
 			{
 				displayName: 'Actions',
@@ -522,7 +526,9 @@ export class PdfMonkey implements INodeType {
 					});
 					continue;
 				}
-				throw error;
+				throw error instanceof NodeApiError
+					? error
+					: new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
 			}
 		}
 
