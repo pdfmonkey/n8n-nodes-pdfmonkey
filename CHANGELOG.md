@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- (Fix) Marking the `n8n-workflow` peer dependency as optional, so a manual `npm install` no longer pulls a copy of `n8n-workflow` that shadows the one n8n runs. An outdated copy made n8n fail to load the package with “Class could not be found”
+
 ## 1.0.2 (2026-10-01)
 
 - (Improvement) Making the PDFMonkey node available as a tool for AI Agents
