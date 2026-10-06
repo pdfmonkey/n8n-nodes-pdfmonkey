@@ -20,6 +20,8 @@ This is an n8n community node. It lets you use PDFMonkey in your n8n workflows.
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
+If you install the package by hand with `npm` in `~/.n8n/nodes`, make sure that folder has no `node_modules/n8n-workflow` of its own. Older versions of this package (and other community nodes) let npm install one, and n8n then loads the nodes against it instead of its own copy, which fails with “Class could not be found”. Delete it and restart n8n; adding `legacy-peer-deps=true` to `~/.n8n/nodes/.npmrc` keeps npm from reinstalling it.
+
 ## Operations
 
 ### PDFMonkey Node
