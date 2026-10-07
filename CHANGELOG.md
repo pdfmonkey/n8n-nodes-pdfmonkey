@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- (Chore) Copying the icons with Node’s `fs.cpSync` instead of gulp, which drops gulp’s dependency tree and the `braces` advisory (GHSA-vfj7-8cjw-p6xm) that failed `audit` in CI
+
 ## 1.0.2 (2026-10-01)
 
 - (Improvement) Making the PDFMonkey node available as a tool for AI Agents
